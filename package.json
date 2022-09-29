@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write **/**/*.{js,json,ts}",
+    "build": "rm -rf build && tsc -p ."
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
     "@ethersproject/providers": "^5.7.1",
     "@ethersproject/units": "^5.7.0",
     "@ethersproject/wallet": "^5.7.0",
+    "debug": "^4.3.4",
     "dotenv": "^16.0.2",
     "express": "^4.18.1",
     "lodash": "^4.17.21",
