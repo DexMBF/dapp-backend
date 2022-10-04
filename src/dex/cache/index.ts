@@ -1,4 +1,4 @@
-import { cacheItem, closeConnection, initConnection, itemExists } from "../../shared/cache/redis";
+import { cacheItem, closeConnection, initConnection, itemExists, readItem } from "../../shared/cache/redis";
 
 const cacheKeyPrefix = "redis::cache::dex";
 
@@ -14,7 +14,7 @@ export async function propagateSwapEventData(
 ) {
   try {
     await initConnection();
-    const swapKey = cacheKeyPrefix.concat("::", "swaps::", pair, Date.now().toString(16));
+    const swapKey = cacheKeyPrefix.concat("::", "swaps::", pair, "::", Date.now().toString(16));
     await cacheItem(
       swapKey,
       {
@@ -39,7 +39,7 @@ export async function propagateSwapEventData(
 export async function propagateSyncEventData(pair: string, reserve0: string, reserve1: string) {
   try {
     await initConnection();
-    const syncKey = cacheKeyPrefix.concat("::", "syncs::", pair, Date.now().toString(16));
+    const syncKey = cacheKeyPrefix.concat("::", "syncs::", pair, "::", Date.now().toString(16));
     await cacheItem(syncKey, {
       pair,
       reserve0,
@@ -47,6 +47,52 @@ export async function propagateSyncEventData(pair: string, reserve0: string, res
     });
     await closeConnection();
   } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function propagateLastBlockNumberForFactory(blockNumber: string) {
+  try {
+    await initConnection();
+    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory");
+    await cacheItem(lastBlockKey, blockNumber);
+    await closeConnection();
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function propagateLastBlockNumberForPairs(pair: string, blockNumber: string) {
+  try {
+    await initConnection();
+    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair);
+    await cacheItem(lastBlockKey, blockNumber);
+    await closeConnection();
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getLastBlockNumberForFactory() {
+  try {
+    await initConnection();
+    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory");
+    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt((await readItem(lastBlockKey)) as string) : 0;
+    await closeConnection();
+    return Promise.resolve(lastBlock);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getLastBlockNumberForPairs(pair: string) {
+  try {
+    await initConnection();
+    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::pairs", pair);
+    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt((await readItem(lastBlockKey)) as string) : 0;
+    await closeConnection();
+    return Promise.resolve(lastBlock);
+  } catch (error) {
     return Promise.reject(error);
   }
 }

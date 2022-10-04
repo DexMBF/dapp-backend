@@ -42,3 +42,8 @@ export const itemExists = (key: string) => {
       .catch(reject);
   });
 };
+export const getAllKeysMatching = (pattern: string) => {
+  return new Promise<Array<string>>((resolve, reject) => {
+    client.keys(pattern).then(resolve).catch(reject);
+  });
+};
