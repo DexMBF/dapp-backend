@@ -2,8 +2,14 @@ import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
 import { id as hashId } from "@ethersproject/hash";
 import { abi as pairAbi } from "quasar-v1-core/artifacts/contracts/QuasarPair.sol/QuasarPair.json";
-import { propagateLastBlockNumberForFactory, propagateLastBlockNumberForPairs, propagateSwapEventData, propagateSyncEventData } from "../../cache";
-import { buildProvider } from "../../utils";
+import {
+  propagateLastBlockNumberForFactory,
+  propagateLastBlockNumberForPairs,
+  propagateSwapEventData,
+  propagateSyncEventData,
+  propagateTransferEventData
+} from "../../cache";
+import { buildProvider } from "../../../shared/utils";
 import logger from "../../../shared/log";
 
 const pairAbiInterface = new Interface(pairAbi);
@@ -11,6 +17,7 @@ const pairAbiInterface = new Interface(pairAbi);
 // Events hashes
 const syncHash = hashId("Sync(uint112,uint112)");
 const swapHash = hashId("Swap(address,uint256,uint256,uint256,uint256,address)");
+const transferHash = hashId("Transfer(address,address,uint256)");
 
 const handleSyncEvent = (pair: string, chainId: string) => {
   return async (log: any) => {
@@ -47,12 +54,25 @@ const handleSwapEvent = (pair: string, chainId: string) => {
   };
 };
 
+const handleTransferEvent = (pair: string, chainId: string) => {
+  return async (log: any) => {
+    try {
+      const { args } = pairAbiInterface.parseLog(log);
+      const [from, to, amount] = args;
+      await propagateTransferEventData(pair, from, to, amount.toString(), log.transactionHash, chainId);
+    } catch (error: any) {
+      logger(error.message);
+    }
+  };
+};
+
 export const watchPair = (url: string, pair: string, chainId: string) => {
   try {
     const provider = buildProvider(url);
 
     provider.on({ address: pair, topics: [syncHash] }, handleSyncEvent(pair, chainId));
     provider.on({ address: pair, topics: [swapHash] }, handleSwapEvent(pair, chainId));
+    provider.on({ address: pair, topics: [transferHash] }, handleTransferEvent(pair, chainId));
   } catch (error: any) {
     logger(error.message);
   }

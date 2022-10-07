@@ -41,21 +41,34 @@ export async function propagateSyncEventData(pair: string, reserve0: string, res
   try {
     await initConnection();
     const syncKey = cacheKeyPrefix.concat("::", "syncs::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
-    await cacheItem(syncKey, {
-      pair,
-      reserve0,
-      reserve1,
-      transactionHash,
-      chainId,
-      timestamp: Date.now()
-    });
+    await cacheItem(
+      syncKey,
+      {
+        pair,
+        reserve0,
+        reserve1,
+        transactionHash,
+        chainId,
+        timestamp: Date.now()
+      },
+      60 * 24 * 30
+    );
     await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
 }
 
-export async function propagateTransferEventData(pair: string, from: string) {}
+export async function propagateTransferEventData(pair: string, from: string, to: string, amount: string, transactionHash: string, chainId: string) {
+  try {
+    await initConnection();
+    const transferKey = cacheKeyPrefix.concat("::", "transfers::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
+    await cacheItem(transferKey, { pair, from, to, transactionHash, chainId, amount, timestamp: Date.now() }, 60 * 24 * 30);
+    await closeConnection();
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
 
 export async function propagateLastBlockNumberForFactory(blockNumber: string, chainId: string) {
   try {
@@ -154,6 +167,33 @@ export async function getAllSyncEvents() {
     await closeConnection();
     return Promise.resolve(allSyncEvents);
   } catch (error) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getAllTransferEvents() {
+  try {
+    await initConnection();
+    const transferKey = cacheKeyPrefix.concat("::transfers::", "*");
+    const allMatchingKeys = await getAllKeysMatching(transferKey);
+    let allTransferEvents: Array<{
+      pair: string;
+      from: string;
+      to: string;
+      transactionHash: string;
+      amount: string;
+      chainId: string;
+      timestamp: number;
+    }> = [];
+
+    _.each(allMatchingKeys, async key => {
+      const item = JSON.parse((await readItem(key)) as string);
+      allTransferEvents = _.concat(allTransferEvents, item);
+    });
+
+    await closeConnection();
+    return Promise.resolve(allTransferEvents);
+  } catch (error: any) {
     return Promise.reject(error);
   }
 }
