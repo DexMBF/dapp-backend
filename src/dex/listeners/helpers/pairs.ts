@@ -2,15 +2,17 @@ import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
 import { id as hashId } from "@ethersproject/hash";
 import { abi as pairAbi } from "quasar-v1-core/artifacts/contracts/QuasarPair.sol/QuasarPair.json";
+import _ from "lodash";
 import {
-  propagateLastBlockNumberForFactory,
+  getLastBlockNumberForPairs,
   propagateLastBlockNumberForPairs,
   propagateSwapEventData,
   propagateSyncEventData,
   propagateTransferEventData
 } from "../../cache";
-import { buildProvider } from "../../../shared/utils";
+import { buildProvider, rpcCall } from "../../../shared/utils";
 import logger from "../../../shared/log";
+import { pairs } from "../../db/models";
 
 const pairAbiInterface = new Interface(pairAbi);
 
@@ -47,7 +49,7 @@ const handleSwapEvent = (pair: string, chainId: string) => {
         log.transactionHash,
         chainId
       );
-      await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
+      await propagateLastBlockNumberForPairs(pair, hexValue(log.blockNumber), chainId);
     } catch (error: any) {
       logger(error.message);
     }
@@ -60,6 +62,7 @@ const handleTransferEvent = (pair: string, chainId: string) => {
       const { args } = pairAbiInterface.parseLog(log);
       const [from, to, amount] = args;
       await propagateTransferEventData(pair, from, to, amount.toString(), log.transactionHash, chainId);
+      await propagateLastBlockNumberForPairs(pair, hexValue(log.blockNumber), chainId);
     } catch (error: any) {
       logger(error.message);
     }
@@ -76,4 +79,67 @@ export const watchPair = (url: string, pair: string, chainId: string) => {
   } catch (error: any) {
     logger(error.message);
   }
+};
+
+export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
+  try {
+    const allPairs = await pairs.getAllPairs({ where: { chainId } });
+    const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
+
+    _.each(allPairs, async model => {
+      const lastPropagatedBlockForPair = await getLastBlockNumberForPairs(model.id, chainId);
+      const logs = await rpcCall(parseInt(chainId), {
+        method: "eth_getLogs",
+        params: [{ fromBlock: hexValue(lastPropagatedBlockForPair + 1), toBlock: blockNumber, address: model.id, topics: [] }]
+      });
+
+      _.each(logs, async (log: any) => {
+        const { args, name } = pairAbiInterface.parseLog(log);
+
+        switch (name) {
+          case "Sync": {
+            const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
+            await propagateSwapEventData(
+              model.id,
+              amount0In.toString(),
+              amount1In.toString(),
+              amount0Out.toString(),
+              amount1Out.toString(),
+              to,
+              log.transactionHash,
+              chainId
+            );
+            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+            break;
+          }
+          case "Swap": {
+            const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
+            await propagateSwapEventData(
+              model.id,
+              amount0In.toString(),
+              amount1In.toString(),
+              amount0Out.toString(),
+              amount1Out.toString(),
+              to,
+              log.transactionHash,
+              chainId
+            );
+            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+            break;
+          }
+          case "Transfer": {
+            const [from, to, amount] = args;
+            await propagateTransferEventData(model.id, from, to, amount.toString(), log.transactionHash, chainId);
+            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+            break;
+          }
+          default: {
+            break;
+          }
+        }
+      });
+
+      watchPair(url, model.id, chainId);
+    });
+  } catch (error: any) {}
 };
