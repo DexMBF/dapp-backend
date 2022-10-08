@@ -2,5 +2,9 @@
   "1337": {
     "factory": "0xB21887698d5c4D9E4e02c5f7EBDf2Cc1d81Adf5B",
     "router": "0x523580f8c1aA99C24Df56E5A6F286865B6B21cD6"
+  },
+  "97": {
+    "factory": "0x583DD96cD23602979333B98bB81dFd22b55faa46",
+    "router": "0xD36e39a29dBdF0f1f02B271B165f9f08BECB631c"
   }
 }

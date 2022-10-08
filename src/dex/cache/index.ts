@@ -96,7 +96,8 @@ export async function getLastBlockNumberForFactory(chainId: string) {
   try {
     await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);
-    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt((await readItem(lastBlockKey)) as string) : 0;
+    const i = await readItem(lastBlockKey);
+    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
     await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
@@ -108,7 +109,7 @@ export async function getLastBlockNumberForPairs(pair: string, chainId: string) 
   try {
     await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair, "::", chainId);
-    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt((await readItem(lastBlockKey)) as string) : 0;
+    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
     await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
@@ -159,10 +160,14 @@ export async function getAllSyncEvents() {
       timestamp: number;
     }> = [];
 
-    _.each(allMatchingKeys, async key => {
+    for (const key of allMatchingKeys) {
       const item = JSON.parse((await readItem(key)) as string);
       allSyncEvents = _.concat(allSyncEvents, item);
-    });
+    }
+
+    // _.forEach(allMatchingKeys, async key => {
+
+    // });
 
     await closeConnection();
     return Promise.resolve(allSyncEvents);
@@ -186,10 +191,14 @@ export async function getAllTransferEvents() {
       timestamp: number;
     }> = [];
 
-    _.each(allMatchingKeys, async key => {
+    for (const key of allMatchingKeys) {
       const item = JSON.parse((await readItem(key)) as string);
       allTransferEvents = _.concat(allTransferEvents, item);
-    });
+    }
+
+    // _.each(allMatchingKeys, async key => {
+
+    // });
 
     await closeConnection();
     return Promise.resolve(allTransferEvents);

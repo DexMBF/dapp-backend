@@ -2,7 +2,6 @@ import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
 import { abi } from "quasar-v1-core/artifacts/contracts/QuasarFactory.sol/QuasarFactory.json";
 import assert from "assert";
-import _ from "lodash";
 import { getLastBlockNumberForFactory, propagateLastBlockNumberForFactory } from "../cache";
 import { PairModel, pairs } from "../db/models";
 import { watchPair } from "./helpers/pairs";
@@ -24,6 +23,8 @@ export const handlePairCreatedEvent = (url: string, chainId: string) => {
     const { args } = factoryAbiInterface.parseLog(log);
     const [token0, token1, pair] = args;
 
+    logger("----- New pair created %s -----", pair);
+
     await pushPairToDB(pair, token0, token1, chainId);
     await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
     watchPair(url, pair, chainId);
@@ -33,7 +34,9 @@ export const handlePairCreatedEvent = (url: string, chainId: string) => {
 export const getPastLogsForFactory = async (url: string, factory: string, chainId: string) => {
   try {
     assert.equal(factory, xInfo[parseInt(chainId) as unknown as keyof typeof xInfo].factory, "factories do not match");
+    logger("----- Retrieving last propagated block for factory %s -----", factory);
     const lastPropagatedBlockForFactory = await getLastBlockNumberForFactory(chainId);
+    logger("----- Last propagated block for factory %s is %d", factory, lastPropagatedBlockForFactory);
 
     if (lastPropagatedBlockForFactory > 0) {
       const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
@@ -42,23 +45,26 @@ export const getPastLogsForFactory = async (url: string, factory: string, chainI
         params: [{ fromBlock: hexValue(lastPropagatedBlockForFactory + 1), toBlock: blockNumber, address: factory, topics: [] }]
       });
 
-      _.each(logs, async (log: any) => {
-        const { args, name } = factoryAbiInterface.parseLog(log);
+      logger("----- Iterating logs for factory %s -----", factory);
+      for (const log of logs) {
+        {
+          const { args, name } = factoryAbiInterface.parseLog(log);
 
-        switch (name) {
-          case "PairCreated": {
-            const [token0, token1, pair] = args;
-
-            await pushPairToDB(pair, token0, token1, chainId);
-            await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
-            watchPair(url, pair, chainId);
-            break;
-          }
-          default: {
-            break;
+          switch (name) {
+            case "PairCreated": {
+              const [token0, token1, pair] = args;
+              logger("----- New pair created %s -----", pair);
+              await pushPairToDB(pair, token0, token1, chainId);
+              await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
+              watchPair(url, pair, chainId);
+              break;
+            }
+            default: {
+              break;
+            }
           }
         }
-      });
+      }
     }
   } catch (error: any) {
     logger(error.message);
