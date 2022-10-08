@@ -17,6 +17,8 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/api", router);
+
 app.listen(port, () => {
   // Sync DB and handle events
   syncDEXDB();

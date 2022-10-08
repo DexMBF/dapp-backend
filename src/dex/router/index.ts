@@ -4,6 +4,7 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import { Interface } from "@ethersproject/abi";
+import { hexStripZeros } from "@ethersproject/bytes";
 import { abi as pairAbi } from "quasar-v1-core/artifacts/contracts/QuasarPair.sol/QuasarPair.json";
 import { abi as erc20Abi } from "quasar-v1-core/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json";
 import chains from "../../shared/supportedChains.json";
@@ -59,14 +60,20 @@ const fetchLiquidityPoolsForAddress = async (req: express.Request, res: express.
         const token0Call = await rpcCall(chainId, { method: "eth_call", params: [{ to: item, data: token0Hash }, "latest"] });
         const token1Call = await rpcCall(chainId, { method: "eth_call", params: [{ to: item, data: token1Hash }, "latest"] });
         const symbolHash = erc20AbiInterface.getSighash("symbol()");
-        let token0SymbolCall = await rpcCall(chainId, { method: "eth_call", params: [{ to: token0Call, data: symbolHash }, "latest"] });
-        let token1SymbolCall = await rpcCall(chainId, { method: "eth_call", params: [{ to: token1Call, data: symbolHash }, "latest"] });
+        let token0SymbolCall = await rpcCall(chainId, {
+          method: "eth_call",
+          params: [{ to: hexStripZeros(token0Call), data: symbolHash }, "latest"]
+        });
+        let token1SymbolCall = await rpcCall(chainId, {
+          method: "eth_call",
+          params: [{ to: hexStripZeros(token1Call), data: symbolHash }, "latest"]
+        });
         [token0SymbolCall] = erc20AbiInterface.decodeFunctionResult("symbol()", token0SymbolCall);
         [token1SymbolCall] = erc20AbiInterface.decodeFunctionResult("symbol()", token1SymbolCall);
         return {
           pair: item,
-          token0Address: token0Call,
-          token1Address: token1Call,
+          token0Address: hexStripZeros(token0Call),
+          token1Address: hexStripZeros(token1Call),
           token0Symbol: token0SymbolCall,
           token1Symbol: token1SymbolCall
         };

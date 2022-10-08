@@ -4,7 +4,7 @@ import logger from "../log";
 
 const sequelize = new Sequelize(dbURI as string, {
   dialect: "postgres",
-  logging: (sql, timing) => logger("%s in %d", sql, timing),
+  logging: sql => logger("%s in %d", sql),
   define: {
     underscored: true
   }
