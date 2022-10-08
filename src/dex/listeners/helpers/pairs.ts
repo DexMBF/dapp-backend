@@ -73,6 +73,8 @@ export const watchPair = (url: string, pair: string, chainId: string) => {
   try {
     const provider = buildProvider(url);
 
+    logger("----- Now watching pair %s on chain %s -----", pair, chainId);
+
     provider.on({ address: pair, topics: [syncHash] }, handleSyncEvent(pair, chainId));
     provider.on({ address: pair, topics: [swapHash] }, handleSwapEvent(pair, chainId));
     provider.on({ address: pair, topics: [transferHash] }, handleTransferEvent(pair, chainId));
@@ -88,58 +90,62 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
 
     _.each(allPairs, async model => {
       const lastPropagatedBlockForPair = await getLastBlockNumberForPairs(model.id, chainId);
-      const logs = await rpcCall(parseInt(chainId), {
-        method: "eth_getLogs",
-        params: [{ fromBlock: hexValue(lastPropagatedBlockForPair + 1), toBlock: blockNumber, address: model.id, topics: [] }]
-      });
+      if (lastPropagatedBlockForPair > 0) {
+        const logs = await rpcCall(parseInt(chainId), {
+          method: "eth_getLogs",
+          params: [{ fromBlock: hexValue(lastPropagatedBlockForPair + 1), toBlock: blockNumber, address: model.id, topics: [] }]
+        });
 
-      _.each(logs, async (log: any) => {
-        const { args, name } = pairAbiInterface.parseLog(log);
+        _.each(logs, async (log: any) => {
+          const { args, name } = pairAbiInterface.parseLog(log);
 
-        switch (name) {
-          case "Sync": {
-            const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
-            await propagateSwapEventData(
-              model.id,
-              amount0In.toString(),
-              amount1In.toString(),
-              amount0Out.toString(),
-              amount1Out.toString(),
-              to,
-              log.transactionHash,
-              chainId
-            );
-            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
-            break;
+          switch (name) {
+            case "Sync": {
+              const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
+              await propagateSwapEventData(
+                model.id,
+                amount0In.toString(),
+                amount1In.toString(),
+                amount0Out.toString(),
+                amount1Out.toString(),
+                to,
+                log.transactionHash,
+                chainId
+              );
+              await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+              break;
+            }
+            case "Swap": {
+              const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
+              await propagateSwapEventData(
+                model.id,
+                amount0In.toString(),
+                amount1In.toString(),
+                amount0Out.toString(),
+                amount1Out.toString(),
+                to,
+                log.transactionHash,
+                chainId
+              );
+              await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+              break;
+            }
+            case "Transfer": {
+              const [from, to, amount] = args;
+              await propagateTransferEventData(model.id, from, to, amount.toString(), log.transactionHash, chainId);
+              await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+              break;
+            }
+            default: {
+              break;
+            }
           }
-          case "Swap": {
-            const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
-            await propagateSwapEventData(
-              model.id,
-              amount0In.toString(),
-              amount1In.toString(),
-              amount0Out.toString(),
-              amount1Out.toString(),
-              to,
-              log.transactionHash,
-              chainId
-            );
-            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
-            break;
-          }
-          case "Transfer": {
-            const [from, to, amount] = args;
-            await propagateTransferEventData(model.id, from, to, amount.toString(), log.transactionHash, chainId);
-            await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
-            break;
-          }
-          default: {
-            break;
-          }
-        }
-      });
+        });
 
-      watchPair(url, model.id, chainId);
+        watchPair(url, model.id, chainId);
+      }
     });
-  } catch (error: any) {}
+  } catch (error: any) {
+    logger(error.message);
+  }
 };

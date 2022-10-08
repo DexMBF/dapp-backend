@@ -1,5 +1,8 @@
 import express, { Router } from "express";
 import _ from "lodash";
+import assert from "assert";
+import fs from "fs";
+import path from "path";
 import { Interface } from "@ethersproject/abi";
 import { abi as pairAbi } from "quasar-v1-core/artifacts/contracts/QuasarPair.sol/QuasarPair.json";
 import { abi as erc20Abi } from "quasar-v1-core/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json";
@@ -27,11 +30,8 @@ const fetchPriceHistoryForPair = async (req: express.Request, res: express.Respo
     if (query.period) {
       const period = query.period as string;
       const time = parseInt(period);
-      if (Date.now() >= time) {
-        filteredSyncEvents = _.filter(filteredSyncEvents, ev => ev.timestamp <= Date.now() && ev.timestamp >= Date.now() - time);
-      } else {
-        throw new Error("No data available for this time");
-      }
+      assert(Date.now() >= time, "No data available for this time");
+      filteredSyncEvents = _.filter(filteredSyncEvents, ev => ev.timestamp <= Date.now() && ev.timestamp >= Date.now() - time);
     } else {
       filteredSyncEvents = _.filter(filteredSyncEvents, ev => ev.timestamp <= Date.now() && ev.timestamp >= Date.now() - 60 * 60 * 24 * 1000);
     }
@@ -85,9 +85,23 @@ const fetchLiquidityPoolsForAddress = async (req: express.Request, res: express.
   }
 };
 
+const fetchListing = async (req: express.Request, res: express.Response) => {
+  try {
+    const { params } = _.pick(req, ["params"]);
+    const location = path.join(__dirname, "../assets/listing/", parseInt(params.chainId).toString() + ".json");
+    assert.ok(fs.existsSync(location), "listing for this chain does not exist");
+    const contentBuf = fs.readFileSync(location);
+    const contentJSON = JSON.parse(contentBuf.toString());
+    return res.status(200).json({ result: contentJSON });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const router = Router();
 
 router.get("/price_history/:pair/:chainId", fetchPriceHistoryForPair);
-router.get("/pools/:chainId/:to/", fetchLiquidityPoolsForAddress);
+router.get("/pools/:chainId/:to", fetchLiquidityPoolsForAddress);
+router.get("/listing/:chainId", fetchListing);
 
 export default router;
