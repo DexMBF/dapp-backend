@@ -134,10 +134,10 @@ export async function getAllSwapEvents() {
       timestamp: number;
     }> = [];
 
-    _.each(allMatchingKeys, async key => {
+    for (const key of allMatchingKeys) {
       const item = JSON.parse((await readItem(key)) as string);
       allSwapEvents = _.concat(allSwapEvents, item);
-    });
+    }
 
     await closeConnection();
     return Promise.resolve(allSwapEvents);

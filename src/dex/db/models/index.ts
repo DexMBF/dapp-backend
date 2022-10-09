@@ -1,2 +1,1 @@
-export { PairModel } from "./pairs";
-export { default as pairs } from "./pairs";
+export { PairModel, default as pairs } from "./pairs";

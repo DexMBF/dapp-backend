@@ -42,7 +42,8 @@
     "quasar-v1-core": "^1.0.1",
     "redis": "^4.3.1",
     "sequelize": "^6.23.2",
-    "socket.io": "^4.5.2"
+    "socket.io": "^4.5.2",
+    "vefi-token-launchpad-staking": "^1.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
