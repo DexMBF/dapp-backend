@@ -12,7 +12,7 @@ import { getPastLogsForAllPools } from "./helpers/staking-pools";
 const chains = supportedChains[env === "production" ? "mainnet" : "testnet"] as any;
 
 // Event ID
-const stakingPoolDeployedEventId = hashId("StakingPoolDeployed(bytes32,address,address,uint256,uint256,uint256)");
+const stakingPoolDeployedEventId = hashId("StakingPoolDeployed(address,address,address,uint256,uint256,uint256)");
 
 function listenForAllStakingPoolEvents() {
   try {
@@ -39,7 +39,7 @@ function getPastStakingPoolEvents() {
   }
 }
 
-export default function handleDEXEvents() {
+export default function handleStakingPoolEvents() {
   listenForAllStakingPoolEvents();
   getPastStakingPoolEvents();
 }

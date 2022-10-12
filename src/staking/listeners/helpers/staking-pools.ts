@@ -13,6 +13,7 @@ const stakingPoolAbiInterface = new Interface(stakingPoolAbi);
 // Events hashes
 const stakedHash = hashId("Staked(uint256,address,uint256,address,bytes32)");
 const unstakedHash = hashId("Unstaked(uint256,bytes32)");
+const ownershipTransferredHash = hashId("OwnershipTransferred(address,address)");
 
 const handleStakedEvent = (poolId: string, chainId: string) => {
   return async (log: any) => {
@@ -42,6 +43,20 @@ const handleUnstakedEvent = (poolId: string, chainId: string) => {
   };
 };
 
+const handleOwnershipTransferredEvent = (poolId: string, chainId: string) => {
+  return async (log: any) => {
+    try {
+      const { args } = stakingPoolAbiInterface.parseLog(log);
+      logger("----- Ownership transfer occured on pool %s -----", poolId);
+      const [, owner] = args;
+      await stakingPools.updateStakingPoolById(poolId, { owner });
+      await propagateLastBlockNumberForPool(poolId, hexValue(log.blockNumber), chainId);
+    } catch (error: any) {
+      logger(error.message);
+    }
+  };
+};
+
 export const watchPool = (url: string, poolId: string, chainId: string) => {
   try {
     const provider = buildProvider(url);
@@ -50,6 +65,7 @@ export const watchPool = (url: string, poolId: string, chainId: string) => {
 
     provider.on({ address: poolId, topics: [stakedHash] }, handleStakedEvent(poolId, chainId));
     provider.on({ address: poolId, topics: [unstakedHash] }, handleUnstakedEvent(poolId, chainId));
+    provider.on({ address: poolId, topics: [ownershipTransferredHash] }, handleOwnershipTransferredEvent(poolId, chainId));
   } catch (error: any) {
     logger(error.message);
   }
@@ -107,6 +123,20 @@ export const getPastLogsForAllPools = async (url: string, chainId: string) => {
                   );
                   const [amountUnstaked, stakeId] = args;
                   await propagateUnstakeEventData(model.id, stakeId, amountUnstaked.toString(), chainId);
+                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
+                  break;
+                }
+                case "OwnershipTransferred": {
+                  logger(
+                    "----- Retrieving ownership transferred event with transaction hash %s and block number %s for pool %s -----",
+                    log.transactionHash,
+                    log.blockNumber,
+                    model.id
+                  );
+
+                  const { args } = stakingPoolAbiInterface.parseLog(log);
+                  const [, owner] = args;
+                  await stakingPools.updateStakingPoolById(model.id, { owner });
                   await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
                   break;
                 }

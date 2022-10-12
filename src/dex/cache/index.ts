@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { cacheItem, closeConnection, initConnection, itemExists, readItem, getAllKeysMatching } from "../../shared/cache/redis";
+import { cacheItem, itemExists, readItem, getAllKeysMatching } from "../../shared/cache/redis";
 
 const cacheKeyPrefix = "redis::cache::dex";
 
@@ -14,7 +14,6 @@ export async function propagateSwapEventData(
   chainId: string
 ) {
   try {
-    await initConnection();
     const swapKey = cacheKeyPrefix.concat("::", "swaps::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
     await cacheItem(
       swapKey,
@@ -31,7 +30,6 @@ export async function propagateSwapEventData(
       },
       60 * 24 * 30
     );
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -39,7 +37,6 @@ export async function propagateSwapEventData(
 
 export async function propagateSyncEventData(pair: string, reserve0: string, reserve1: string, transactionHash: string, chainId: string) {
   try {
-    await initConnection();
     const syncKey = cacheKeyPrefix.concat("::", "syncs::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
     await cacheItem(
       syncKey,
@@ -53,7 +50,6 @@ export async function propagateSyncEventData(pair: string, reserve0: string, res
       },
       60 * 24 * 30
     );
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -61,10 +57,8 @@ export async function propagateSyncEventData(pair: string, reserve0: string, res
 
 export async function propagateTransferEventData(pair: string, from: string, to: string, amount: string, transactionHash: string, chainId: string) {
   try {
-    await initConnection();
     const transferKey = cacheKeyPrefix.concat("::", "transfers::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
     await cacheItem(transferKey, { pair, from, to, transactionHash, chainId, amount, timestamp: Date.now() }, 60 * 24 * 30);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -72,10 +66,8 @@ export async function propagateTransferEventData(pair: string, from: string, to:
 
 export async function propagateLastBlockNumberForFactory(blockNumber: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);
     await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -83,10 +75,8 @@ export async function propagateLastBlockNumberForFactory(blockNumber: string, ch
 
 export async function propagateLastBlockNumberForPairs(pair: string, blockNumber: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair, "::", chainId);
     await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -94,11 +84,9 @@ export async function propagateLastBlockNumberForPairs(pair: string, blockNumber
 
 export async function getLastBlockNumberForFactory(chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);
     const i = await readItem(lastBlockKey);
     const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
@@ -107,10 +95,8 @@ export async function getLastBlockNumberForFactory(chainId: string) {
 
 export async function getLastBlockNumberForPairs(pair: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair, "::", chainId);
     const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
@@ -119,7 +105,6 @@ export async function getLastBlockNumberForPairs(pair: string, chainId: string) 
 
 export async function getAllSwapEvents() {
   try {
-    await initConnection();
     const swapKey = cacheKeyPrefix.concat("::swaps::", "*");
     const allMatchingKeys = await getAllKeysMatching(swapKey);
     let allSwapEvents: Array<{
@@ -138,8 +123,6 @@ export async function getAllSwapEvents() {
       const item = JSON.parse((await readItem(key)) as string);
       allSwapEvents = _.concat(allSwapEvents, item);
     }
-
-    await closeConnection();
     return Promise.resolve(allSwapEvents);
   } catch (error) {
     return Promise.reject(error);
@@ -148,7 +131,6 @@ export async function getAllSwapEvents() {
 
 export async function getAllSyncEvents() {
   try {
-    await initConnection();
     const syncKey = cacheKeyPrefix.concat("::syncs::", "*");
     const allMatchingKeys = await getAllKeysMatching(syncKey);
     let allSyncEvents: Array<{
@@ -169,7 +151,6 @@ export async function getAllSyncEvents() {
 
     // });
 
-    await closeConnection();
     return Promise.resolve(allSyncEvents);
   } catch (error) {
     return Promise.reject(error);
@@ -178,7 +159,6 @@ export async function getAllSyncEvents() {
 
 export async function getAllTransferEvents() {
   try {
-    await initConnection();
     const transferKey = cacheKeyPrefix.concat("::transfers::", "*");
     const allMatchingKeys = await getAllKeysMatching(transferKey);
     let allTransferEvents: Array<{
@@ -199,8 +179,6 @@ export async function getAllTransferEvents() {
     // _.each(allMatchingKeys, async key => {
 
     // });
-
-    await closeConnection();
     return Promise.resolve(allTransferEvents);
   } catch (error: any) {
     return Promise.reject(error);

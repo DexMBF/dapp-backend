@@ -9,6 +9,8 @@ export type StakingPoolModel = {
   tokenAAPY: number;
   tokenBAPY: number;
   chainId: string;
+  tax: number;
+  owner: string;
   createdAt?: any;
   updatedAt?: any;
 };
@@ -20,14 +22,24 @@ const model = buildModel("StakingPool", {
   chainId: { type: DataTypes.STRING, allowNull: false },
   tokenAAPY: { type: DataTypes.INTEGER, allowNull: false },
   tokenBAPY: { type: DataTypes.INTEGER, allowNull: false },
-  tax: { type: DataTypes.INTEGER, allowNull: false }
+  tax: { type: DataTypes.INTEGER, allowNull: false },
+  owner: { type: DataTypes.STRING, allowNull: false }
 });
 
-function addStakingPool(id: string, tokenA: string, tokenB: string, tokenAAPY: number, tokenBAPY: number, tax: number, chainId: string) {
+function addStakingPool(
+  id: string,
+  tokenA: string,
+  tokenB: string,
+  tokenAAPY: number,
+  tokenBAPY: number,
+  tax: number,
+  owner: string,
+  chainId: string
+) {
   try {
     return new Promise<StakingPoolModel>((resolve, reject) => {
       model
-        .create({ id, tokenA, tokenB, chainId, tokenAAPY, tokenBAPY, tax })
+        .create({ id, tokenA, tokenB, chainId, tokenAAPY, tokenBAPY, tax, owner })
         .then(m => resolve(m.toJSON()))
         .catch(reject);
     });
@@ -62,8 +74,19 @@ function getStakingPool(pk: string) {
   }
 }
 
+function updateStakingPoolById(id: string, update: any) {
+  return new Promise<StakingPoolModel>((resolve, reject) => {
+    model
+      .update(update, { where: { id }, returning: true })
+      .then(([, rows]) => rows.map(model => model.toJSON()))
+      .then(rows => resolve(rows[0]))
+      .catch(reject);
+  });
+}
+
 export default _.merge(model, {
   addStakingPool,
   getAllStakingPools,
-  getStakingPool
+  getStakingPool,
+  updateStakingPoolById
 });

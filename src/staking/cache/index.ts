@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { cacheItem, closeConnection, initConnection, itemExists, readItem, getAllKeysMatching } from "../../shared/cache/redis";
+import { cacheItem, itemExists, readItem, getAllKeysMatching } from "../../shared/cache/redis";
 
 const cacheKeyPrefix = "redis::cache::staking-pools";
 
@@ -14,7 +14,6 @@ export async function propagateStakeEventData(
   chainId: string
 ) {
   try {
-    await initConnection();
     const stakeKey = cacheKeyPrefix.concat(
       "::",
       "stakes::",
@@ -37,7 +36,6 @@ export async function propagateStakeEventData(
       transactionHash,
       chainId
     });
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -45,7 +43,6 @@ export async function propagateStakeEventData(
 
 export async function propagateUnstakeEventData(poolId: string, stakeId: string, amount: string, chainId: string) {
   try {
-    await initConnection();
     const key = cacheKeyPrefix.concat("::stakes::", poolId, "::", stakeId, "*");
     const allKeys = await getAllKeysMatching(key);
     let item;
@@ -64,7 +61,6 @@ export async function propagateUnstakeEventData(poolId: string, stakeId: string,
     const newAmount = _.subtract(parseInt(item.amount), parseInt(amount));
     item = { ...item, amount: newAmount.toString() };
     await cacheItem(theKey, item);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -72,10 +68,8 @@ export async function propagateUnstakeEventData(poolId: string, stakeId: string,
 
 export async function propagateLastBlockNumberForAction(blockNumber: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::action::", chainId);
     await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -83,10 +77,8 @@ export async function propagateLastBlockNumberForAction(blockNumber: string, cha
 
 export async function propagateLastBlockNumberForPool(pool: string, blockNumber: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pools::", pool, "::", chainId);
     await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -94,11 +86,9 @@ export async function propagateLastBlockNumberForPool(pool: string, blockNumber:
 
 export async function getLastBlockNumberForAction(chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::action::", chainId);
     const i = await readItem(lastBlockKey);
     const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
@@ -107,10 +97,8 @@ export async function getLastBlockNumberForAction(chainId: string) {
 
 export async function getLastBlockNumberForPool(pool: string, chainId: string) {
   try {
-    await initConnection();
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pools::", pool, "::", chainId);
     const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
@@ -119,7 +107,6 @@ export async function getLastBlockNumberForPool(pool: string, chainId: string) {
 
 export async function getAllStakeEvents() {
   try {
-    await initConnection();
     const stakeKey = cacheKeyPrefix.concat("::stakes::", "*");
     const allMatchingKeys = await getAllKeysMatching(stakeKey);
     let allStakeEvents: Array<{
@@ -136,8 +123,6 @@ export async function getAllStakeEvents() {
       const item = JSON.parse((await readItem(key)) as string);
       allStakeEvents = _.concat(allStakeEvents, item);
     }
-
-    await closeConnection();
     return Promise.resolve(allStakeEvents);
   } catch (error) {
     return Promise.reject(error);
