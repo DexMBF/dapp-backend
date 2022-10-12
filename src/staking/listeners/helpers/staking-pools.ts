@@ -146,10 +146,9 @@ export const getPastLogsForAllPools = async (url: string, chainId: string) => {
               }
             }
           }
-
-          watchPool(url, model.id, chainId);
         }
       }
+      watchPool(url, model.id, chainId);
     }
   } catch (error: any) {
     logger(error.message);

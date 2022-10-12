@@ -1,7 +1,6 @@
 import assert from "assert";
 import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
-import { AddressZero } from "@ethersproject/constants";
 import { abi as actionsAbi } from "vefi-token-launchpad-staking/artifacts/contracts/StakingPoolActions.sol/StakingPoolActions.json";
 import { StakingPoolModel, stakingPools } from "../db/models";
 import { rpcCall } from "../../shared/utils";
@@ -30,8 +29,8 @@ function pushStakingPoolToDB(
 export const handleStakingPoolDeployedEvent = (url: string, chainId: string) => {
   return async (log: any) => {
     const { args } = actionsAbiInterface.parseLog(log);
-    const [poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
-    await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, AddressZero, chainId);
+    const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
+    await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
     await propagateLastBlockNumberForAction(hexValue(log.blockNumber), chainId);
     watchPool(url, poolId, chainId);
   };
@@ -58,9 +57,9 @@ export const getPastLogsForActions = async (url: string, actions: string, chainI
 
           switch (name) {
             case "StakingPoolDeployed": {
-              const [poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
+              const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
               logger("----- New pool created %s -----", poolId);
-              await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, AddressZero, chainId);
+              await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
               await propagateLastBlockNumberForAction(hexValue(log.blockNumber), chainId);
               watchPool(url, poolId, chainId);
               break;
