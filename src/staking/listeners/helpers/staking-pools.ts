@@ -8,7 +8,8 @@ import {
   propagateStakeEventData,
   propagateLastBlockNumberForPool,
   getLastBlockNumberForAction,
-  getLastBlockNumberForPool
+  getLastBlockNumberForPool,
+  propagateUnstakeEventData
 } from "../../cache";
 import { buildProvider, rpcCall } from "../../../shared/utils";
 import logger from "../../../shared/log";
@@ -19,7 +20,6 @@ const stakingPoolAbiInterface = new Interface(stakingPoolAbi);
 // Events hashes
 const stakedHash = hashId("Staked(uint256,address,uint256,address,bytes32)");
 const unstakedHash = hashId("Unstaked(uint256,bytes32)");
-const withdrawnHash = hashId("Withdrawn(uint256,bytes32)");
 
 const handleStakedEvent = (poolId: string, chainId: string) => {
   return async (log: any) => {
@@ -38,119 +38,83 @@ const handleStakedEvent = (poolId: string, chainId: string) => {
 const handleUnstakedEvent = (poolId: string, chainId: string) => {
   return async (log: any) => {
     try {
-      const { args } = pairAbiInterface.parseLog(log);
-      const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
-      logger("----- Swap occurred on pair %s -----", pair);
-      await propagateSwapEventData(
-        pair,
-        amount0In.toString(),
-        amount1In.toString(),
-        amount0Out.toString(),
-        amount1Out.toString(),
-        to,
-        log.transactionHash,
-        chainId
-      );
-      await propagateLastBlockNumberForPairs(pair, hexValue(log.blockNumber), chainId);
+      const { args } = stakingPoolAbiInterface.parseLog(log);
+      const [amountUnstaked, stakeId] = args;
+      logger("----- Unstaking occurred on pool %s -----", poolId);
+      await propagateUnstakeEventData(poolId, stakeId, amountUnstaked.toString(), chainId);
+      await propagateLastBlockNumberForPool(poolId, hexValue(log.blockNumber), chainId);
     } catch (error: any) {
       logger(error.message);
     }
   };
 };
 
-const handleTransferEvent = (pair: string, chainId: string) => {
-  return async (log: any) => {
-    try {
-      const { args } = pairAbiInterface.parseLog(log);
-      const [from, to, amount] = args;
-      logger("----- Transfer occurred on pair %s -----", pair);
-      await propagateTransferEventData(pair, from, to, amount.toString(), log.transactionHash, chainId);
-      await propagateLastBlockNumberForPairs(pair, hexValue(log.blockNumber), chainId);
-    } catch (error: any) {
-      logger(error.message);
-    }
-  };
-};
-
-export const watchPair = (url: string, pair: string, chainId: string) => {
+export const watchPool = (url: string, poolId: string, chainId: string) => {
   try {
     const provider = buildProvider(url);
 
-    logger("----- Now watching pair %s on chain %s -----", pair, chainId);
+    logger("----- Now watching pool %s on chain %s -----", poolId, chainId);
 
-    provider.on({ address: pair, topics: [syncHash] }, handleSyncEvent(pair, chainId));
-    provider.on({ address: pair, topics: [swapHash] }, handleSwapEvent(pair, chainId));
-    provider.on({ address: pair, topics: [transferHash] }, handleTransferEvent(pair, chainId));
+    provider.on({ address: poolId, topics: [stakedHash] }, handleStakedEvent(poolId, chainId));
+    provider.on({ address: poolId, topics: [unstakedHash] }, handleUnstakedEvent(poolId, chainId));
   } catch (error: any) {
     logger(error.message);
   }
 };
 
-export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
+export const getPastLogsForAllPools = async (url: string, chainId: string) => {
   try {
-    const allPairs = await pairs.getAllPairs({ where: { chainId } });
+    const allPools = await stakingPools.getAllStakingPools({ where: { chainId } });
     const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
 
-    for (const model of allPairs) {
+    for (const model of allPools) {
       {
-        logger("----- Retrieving last propagated block for pair %s -----", model.id);
-        const lastPropagatedBlockForPair = await getLastBlockNumberForPairs(model.id, chainId);
-        logger("----- Last propagated block for pair %s is %d", model.id, lastPropagatedBlockForPair);
-        if (lastPropagatedBlockForPair > 0) {
+        logger("----- Retrieving last propagated block for pool %s -----", model.id);
+        const lastPropagatedBlockForPool = await getLastBlockNumberForPool(model.id, chainId);
+        logger("----- Last propagated block for pool %s is %d", model.id, lastPropagatedBlockForPool);
+        if (lastPropagatedBlockForPool > 0) {
           const logs = await rpcCall(parseInt(chainId), {
             method: "eth_getLogs",
-            params: [{ fromBlock: hexValue(lastPropagatedBlockForPair + 1), toBlock: blockNumber, address: model.id, topics: [] }]
+            params: [{ fromBlock: hexValue(lastPropagatedBlockForPool + 1), toBlock: blockNumber, address: model.id, topics: [] }]
           });
 
           logger("----- Iterating logs for pair %s -----", model.id);
           for (const log of logs) {
             {
-              const { args, name } = pairAbiInterface.parseLog(log);
+              const { args, name } = stakingPoolAbiInterface.parseLog(log);
 
               switch (name) {
-                case "Sync": {
+                case "Staked": {
                   logger(
-                    "----- Retrieving sync event with transaction hash %s and block number %s for pair %s -----",
+                    "----- Retrieving staked event with transaction hash %s and block number %s for pool %s -----",
                     log.transactionHash,
                     log.blockNumber,
                     model.id
                   );
-                  const [reserve0, reserve1] = args;
-                  await propagateSyncEventData(model.id, reserve0.toString(), reserve1.toString(), log.transactionHash, chainId);
-                  await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
-                  break;
-                }
-                case "Swap": {
-                  logger(
-                    "----- Retrieving swap event with transaction hash %s and block number %s for pair %s -----",
-                    log.transactionHash,
-                    log.blockNumber,
-                    model.id
-                  );
-                  const [, amount0In, amount1In, amount0Out, amount1Out, to] = args;
-                  await propagateSwapEventData(
+                  const [amount, token, timestamp, staker, stakeId] = args;
+                  await propagateStakeEventData(
                     model.id,
-                    amount0In.toString(),
-                    amount1In.toString(),
-                    amount0Out.toString(),
-                    amount1Out.toString(),
-                    to,
+                    amount.toString(),
+                    token,
+                    _.multiply(timestamp, 1000),
+                    staker,
+                    stakeId,
                     log.transactionHash,
                     chainId
                   );
-                  await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
                   break;
                 }
-                case "Transfer": {
+                case "Unstaked": {
                   logger(
-                    "----- Retrieving transfer event with transaction hash %s and block number %s for pair %s -----",
+                    "----- Retrieving unstaked event with transaction hash %s and block number %s for pool %s -----",
                     log.transactionHash,
                     log.blockNumber,
                     model.id
                   );
-                  const [from, to, amount] = args;
-                  await propagateTransferEventData(model.id, from, to, amount.toString(), log.transactionHash, chainId);
-                  await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                  const [amountUnstaked, stakeId] = args;
+                  await propagateUnstakeEventData(model.id, stakeId, amountUnstaked.toString(), chainId);
+                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
                   break;
                 }
                 default: {
@@ -160,7 +124,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
             }
           }
 
-          watchPair(url, model.id, chainId);
+          watchPool(url, model.id, chainId);
         }
       }
     }

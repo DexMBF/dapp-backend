@@ -19,14 +19,15 @@ const model = buildModel("StakingPool", {
   tokenB: { type: DataTypes.STRING, allowNull: false },
   chainId: { type: DataTypes.STRING, allowNull: false },
   tokenAAPY: { type: DataTypes.INTEGER, allowNull: false },
-  tokenBAPY: { type: DataTypes.INTEGER, allowNull: false }
+  tokenBAPY: { type: DataTypes.INTEGER, allowNull: false },
+  tax: { type: DataTypes.INTEGER, allowNull: false }
 });
 
-function addStakingPool(id: string, tokenA: string, tokenB: string, tokenAAPY: number, tokenBAPY: number, chainId: string) {
+function addStakingPool(id: string, tokenA: string, tokenB: string, tokenAAPY: number, tokenBAPY: number, tax: number, chainId: string) {
   try {
     return new Promise<StakingPoolModel>((resolve, reject) => {
       model
-        .create({ id, tokenA, tokenB, chainId, tokenAAPY, tokenBAPY })
+        .create({ id, tokenA, tokenB, chainId, tokenAAPY, tokenBAPY, tax })
         .then(m => resolve(m.toJSON()))
         .catch(reject);
     });

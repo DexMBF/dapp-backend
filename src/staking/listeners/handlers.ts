@@ -7,16 +7,16 @@ import logger from "../../shared/log";
 
 const actionsAbiInterface = new Interface(actionsAbi);
 
-function pushStakingPoolToDB(id: string, tokenA: string, tokenB: string, tokenAAPY: number, tokenBAPY: number, chainId: string) {
+function pushStakingPoolToDB(id: string, tokenA: string, tokenB: string, tokenAAPY: number, tokenBAPY: number, tax: number, chainId: string) {
   return new Promise<StakingPoolModel>((resolve, reject) => {
-    stakingPools.addStakingPool(id, tokenA, tokenB, tokenAAPY, tokenBAPY, chainId).then(resolve).catch(reject);
+    stakingPools.addStakingPool(id, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, chainId).then(resolve).catch(reject);
   });
 }
 
 export const handleStakingPoolDepoyedEvent = (url: string, chainId: string) => {
   return async (log: any) => {
     const { args } = actionsAbiInterface.parseLog(log);
-    const [poolId, tokenA, tokenB, tokenAAPY, tokenBAPY] = args;
-    await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, chainId);
+    const [poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
+    await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, chainId);
   };
 };
