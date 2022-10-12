@@ -3,14 +3,7 @@ import { hexValue } from "@ethersproject/bytes";
 import { id as hashId } from "@ethersproject/hash";
 import _ from "lodash";
 import { abi as stakingPoolAbi } from "vefi-token-launchpad-staking/artifacts/contracts/StakingPool.sol/StakingPool.json";
-import {
-  propagateLastBlockNumberForAction,
-  propagateStakeEventData,
-  propagateLastBlockNumberForPool,
-  getLastBlockNumberForAction,
-  getLastBlockNumberForPool,
-  propagateUnstakeEventData
-} from "../../cache";
+import { propagateStakeEventData, propagateLastBlockNumberForPool, getLastBlockNumberForPool, propagateUnstakeEventData } from "../../cache";
 import { buildProvider, rpcCall } from "../../../shared/utils";
 import logger from "../../../shared/log";
 import { stakingPools } from "../../db/models";
