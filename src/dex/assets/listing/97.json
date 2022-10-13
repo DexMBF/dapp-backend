@@ -1,5 +1,12 @@
 [
   {
+    "name": "tBNB",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "tBNB",
+    "decimals": 18,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
+  },
+  {
     "name": "Wrapped tBNB",
     "address": "0x69c5207A60C8e34311E44A2E10afa0CB4dbFC8df",
     "symbol": "WtBNB",
