@@ -52,33 +52,7 @@ const fetchLiquidityPoolsForAddress = async (req: express.Request, res: express.
       ev => ev.chainId.toLowerCase() === params.chainId.toLowerCase() && ev.to.toLowerCase() === params.to.toLowerCase()
     ).map(ev => ev.pair);
     const pairSet = new Set<string>(pairs);
-    let result = await Promise.all(
-      _.map(Array.from(pairSet), async item => {
-        const chainId = parseInt(params.chainId);
-        const token0Hash = pairAbiInterface.getSighash("token0()");
-        const token1Hash = pairAbiInterface.getSighash("token1()");
-        const token0Call = await rpcCall(chainId, { method: "eth_call", params: [{ to: item, data: token0Hash }, "latest"] });
-        const token1Call = await rpcCall(chainId, { method: "eth_call", params: [{ to: item, data: token1Hash }, "latest"] });
-        const symbolHash = erc20AbiInterface.getSighash("symbol()");
-        let token0SymbolCall = await rpcCall(chainId, {
-          method: "eth_call",
-          params: [{ to: hexStripZeros(token0Call), data: symbolHash }, "latest"]
-        });
-        let token1SymbolCall = await rpcCall(chainId, {
-          method: "eth_call",
-          params: [{ to: hexStripZeros(token1Call), data: symbolHash }, "latest"]
-        });
-        [token0SymbolCall] = erc20AbiInterface.decodeFunctionResult("symbol()", token0SymbolCall);
-        [token1SymbolCall] = erc20AbiInterface.decodeFunctionResult("symbol()", token1SymbolCall);
-        return {
-          pair: item,
-          token0Address: hexStripZeros(token0Call),
-          token1Address: hexStripZeros(token1Call),
-          token0Symbol: token0SymbolCall,
-          token1Symbol: token1SymbolCall
-        };
-      })
-    );
+    let result = Array.from(pairSet);
 
     if (query.page) {
       result = _.slice(result, (parseInt(query.page as string) - 1) * 20, parseInt(query.page as string) * 20);
