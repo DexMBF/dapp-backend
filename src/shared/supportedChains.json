@@ -2,7 +2,7 @@
   "testnet": {
     "97": {
       "name": "Binance Smartchain Testnet",
-      "rpcUrl": "https://bsctestapi.terminet.io/rpc",
+      "rpcUrl": "https://data-seed-prebsc-1-s3.binance.org:8545",
       "explorerUrl": "https://testnet.bscscan.com"
     }
   },

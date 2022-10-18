@@ -2,11 +2,12 @@ import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
 import { id as hashId } from "@ethersproject/hash";
 import _ from "lodash";
-import { abi as stakingPoolAbi } from "vefi-token-launchpad-staking/artifacts/contracts/StakingPool.sol/StakingPool.json";
+import { abi as stakingPoolAbi } from "vefi-token-launchpad-staking/artifacts/contracts/interfaces/IStakingPool.sol/IStakingPool.json";
 import { propagateStakeEventData, propagateLastBlockNumberForPool, getLastBlockNumberForPool, propagateUnstakeEventData } from "../../cache";
 import { buildProvider, rpcCall } from "../../../shared/utils";
 import logger from "../../../shared/log";
 import { stakingPools } from "../../db/models";
+import specialStakingPools from "../../assets/__special__staking__pools.json";
 
 const stakingPoolAbiInterface = new Interface(stakingPoolAbi);
 
@@ -73,7 +74,12 @@ export const watchPool = (url: string, poolId: string, chainId: string) => {
 
 export const getPastLogsForAllPools = async (url: string, chainId: string) => {
   try {
-    const allPools = await stakingPools.getAllStakingPools({ where: { chainId } });
+    const allPools = _.concat(
+      await stakingPools.getAllStakingPools({ where: { chainId } }),
+      specialStakingPools[parseInt(chainId) as unknown as keyof typeof specialStakingPools]
+        ? _.map(specialStakingPools[parseInt(chainId) as unknown as keyof typeof specialStakingPools], item => ({ id: item.address }))
+        : []
+    );
     const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
 
     for (const model of allPools) {

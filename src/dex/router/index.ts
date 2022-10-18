@@ -3,21 +3,7 @@ import _ from "lodash";
 import assert from "assert";
 import fs from "fs";
 import path from "path";
-import { Interface } from "@ethersproject/abi";
-import { hexStripZeros } from "@ethersproject/bytes";
-import { abi as pairAbi } from "quasar-v1-core/artifacts/contracts/QuasarPair.sol/QuasarPair.json";
-import { abi as erc20Abi } from "quasar-v1-core/artifacts/@openzeppelin/contracts/token/ERC20/ERC20.sol/ERC20.json";
-import chains from "../../shared/supportedChains.json";
-import { env } from "../../shared/environment";
-import { rpcCall } from "../../shared/utils";
-import { getAllSyncEvents, getAllTransferEvents } from "../cache";
-
-// Chain
-const chain = chains[env === "production" ? "mainnet" : "testnet"] as any;
-
-// ABIs
-const pairAbiInterface = new Interface(pairAbi);
-const erc20AbiInterface = new Interface(erc20Abi);
+import { getAllSwapEvents, getAllSyncEvents, getAllTransferEvents } from "../cache";
 
 const fetchPriceHistoryForPair = async (req: express.Request, res: express.Response) => {
   try {
@@ -38,6 +24,49 @@ const fetchPriceHistoryForPair = async (req: express.Request, res: express.Respo
     }
 
     return res.status(200).json({ result: filteredSyncEvents });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const fetchSwapEventsForPairUsingPeriod = async (req: express.Request, res: express.Response) => {
+  try {
+    const { params, query } = _.pick(req, ["params", "query"]);
+    const allSwapEvents = await getAllSwapEvents();
+
+    let filteredSwapEvents = _.filter(
+      allSwapEvents,
+      ev => ev.pair.toLowerCase() === params.pair.toLowerCase() && ev.chainId.toLowerCase() === params.chainId.toLowerCase()
+    );
+
+    if (query.period) {
+      const period = query.period as string;
+      const time = parseInt(period);
+      assert(Date.now() >= time, "No data available for this time");
+      filteredSwapEvents = _.filter(filteredSwapEvents, ev => ev.timestamp <= Date.now() && ev.timestamp >= Date.now() - time);
+    } else {
+      filteredSwapEvents = _.filter(filteredSwapEvents, ev => ev.timestamp <= Date.now() && ev.timestamp >= Date.now() - 60 * 60 * 24 * 1000);
+    }
+
+    return res.status(200).json({ result: filteredSwapEvents });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+const fetchTopPairs = async (req: express.Request, res: express.Response) => {
+  try {
+    const { params } = _.pick(req, ["params"]);
+    const allSwapEvents = _.filter(await getAllSwapEvents(), ev => ev.chainId === params.chainId);
+    const occurrences: { [key: string]: number } = {};
+
+    _.each(allSwapEvents, ev => {
+      if (!occurrences[ev.pair]) occurrences[ev.pair] = 1;
+      else occurrences[ev.pair] = _.add(occurrences[ev.pair], 1);
+    });
+
+    const result = _.sortBy(Object.keys(occurrences), key => occurrences[key]).slice(0, 20);
+    return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
   }
@@ -82,7 +111,9 @@ const fetchListing = async (req: express.Request, res: express.Response) => {
 const router = Router();
 
 router.get("/price_history/:pair/:chainId", fetchPriceHistoryForPair);
+router.get("/swap_events/:pair/:chainId", fetchSwapEventsForPairUsingPeriod);
 router.get("/pools/:chainId/:to", fetchLiquidityPoolsForAddress);
 router.get("/listing/:chainId", fetchListing);
+router.get("/top_pairs/:chainId", fetchTopPairs);
 
 export default router;
