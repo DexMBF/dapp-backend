@@ -82,7 +82,14 @@ export async function propagateLastBlockNumberForPairs(pair: string, blockNumber
   }
 }
 
-export async function propagateEventForPairs(pair: string, amount1: string, amount2: string, eventName: string, chainId: string) {
+export async function propagateEventForPairs(
+  pair: string,
+  amount1: string,
+  amount2: string,
+  eventName: string,
+  chainId: string,
+  transactionHash: string
+) {
   try {
     const eventKey = cacheKeyPrefix.concat("::events::", pair, "::", chainId, "::", Date.now().toString(16));
     await cacheItem(
@@ -93,7 +100,8 @@ export async function propagateEventForPairs(pair: string, amount1: string, amou
         amount2,
         pair,
         eventName,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        transactionHash
       },
       60 * 24 * 30
     );
@@ -114,6 +122,7 @@ export async function getAllEvents() {
       pair: string;
       eventName: string;
       timestamp: number;
+      transactionHash: string;
     }> = [];
 
     for (const key of keys) {

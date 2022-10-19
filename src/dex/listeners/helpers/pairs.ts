@@ -59,7 +59,8 @@ const handleSwapEvent = (pair: string, chainId: string) => {
         BigNumber.from(amount0In.toString()).gt("0") ? amount0In.toString() : amount0Out.toString(),
         BigNumber.from(amount1In.toString()).gt("0") ? amount1In.toString() : amount1Out.toString(),
         "swap",
-        chainId
+        chainId,
+        log.transactionHash
       );
       await propagateLastBlockNumberForPairs(pair, hexValue(log.blockNumber), chainId);
     } catch (error: any) {
@@ -74,7 +75,7 @@ const handleMintEvent = (pair: string, chainId: string) => {
       const { args } = pairAbiInterface.parseLog(log);
       const [, amount0, amount1] = args;
       logger("----- Mint occurred on pair %s -----", pair);
-      await propagateEventForPairs(pair, amount0.toString(), amount1.toString(), "mint", chainId);
+      await propagateEventForPairs(pair, amount0.toString(), amount1.toString(), "mint", chainId, log.transactionHash);
     } catch (error: any) {
       logger(error.message);
     }
@@ -87,7 +88,7 @@ const handleBurnEvent = (pair: string, chainId: string) => {
       const { args } = pairAbiInterface.parseLog(log);
       const [, amount0, amount1] = args;
       logger("----- Burn occurred on pair %s -----", pair);
-      await propagateEventForPairs(pair, amount0.toString(), amount1.toString(), "burn", chainId);
+      await propagateEventForPairs(pair, amount0.toString(), amount1.toString(), "burn", chainId, log.transactionHash);
     } catch (error: any) {
       logger(error.message);
     }
@@ -181,7 +182,8 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                     BigNumber.from(amount0In.toString()).gt("0") ? amount0In.toString() : amount0Out.toString(),
                     BigNumber.from(amount1In.toString()).gt("0") ? amount1In.toString() : amount1Out.toString(),
                     "swap",
-                    chainId
+                    chainId,
+                    log.transactionHash
                   );
                   await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
                   break;
@@ -206,7 +208,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                     log.blockNumber,
                     model.id
                   );
-                  await propagateEventForPairs(model.id, amount0.toString(), amount1.toString(), "mint", chainId);
+                  await propagateEventForPairs(model.id, amount0.toString(), amount1.toString(), "mint", chainId, log.transactionHash);
                   await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
                   break;
                 }
@@ -218,7 +220,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                     log.blockNumber,
                     model.id
                   );
-                  await propagateEventForPairs(model.id, amount0.toString(), amount1.toString(), "burn", chainId);
+                  await propagateEventForPairs(model.id, amount0.toString(), amount1.toString(), "burn", chainId, log.transactionHash);
                   break;
                 }
                 default: {
