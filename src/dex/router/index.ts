@@ -100,11 +100,12 @@ const fetchEvents = async (req: express.Request, res: express.Response) => {
     const { params, query } = _.pick(req, ["query", "params"]);
     const allEvents = await getAllEvents();
     let filteredEvents = _.filter(allEvents, ev => ev.chainId === params.chainId);
-    const length = filteredEvents.length;
 
     if (query.eventName && _.includes(["mint", "swap", "burn"], query.eventName as string)) {
       filteredEvents = _.filter(filteredEvents, ev => ev.eventName.toLowerCase() === (query.eventName as string).toLowerCase());
     }
+
+    const length = filteredEvents.length;
 
     if (query.page) {
       filteredEvents = _.slice(filteredEvents, (parseInt(query.page as string) - 1) * 20, parseInt(query.page as string) * 20);
