@@ -82,6 +82,51 @@ export async function propagateLastBlockNumberForPairs(pair: string, blockNumber
   }
 }
 
+export async function propagateEventForPairs(pair: string, amount1: string, amount2: string, eventName: string, chainId: string) {
+  try {
+    const eventKey = cacheKeyPrefix.concat("::events::", pair, "::", chainId, "::", Date.now().toString(16));
+    await cacheItem(
+      eventKey,
+      {
+        chainId,
+        amount1,
+        amount2,
+        pair,
+        eventName,
+        timestamp: Date.now()
+      },
+      60 * 24 * 30
+    );
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getAllEvents() {
+  try {
+    const keysPattern = cacheKeyPrefix.concat("::events::*");
+    const keys = await getAllKeysMatching(keysPattern);
+
+    let events: Array<{
+      chainId: string;
+      amount1: string;
+      amount2: string;
+      pair: string;
+      eventName: string;
+      timestamp: number;
+    }> = [];
+
+    for (const key of keys) {
+      const ev = await readItem(key);
+      const item = JSON.parse(ev as string);
+      events = _.concat(events, item);
+    }
+    return Promise.resolve(events);
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
 export async function getLastBlockNumberForFactory(chainId: string) {
   try {
     const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);

@@ -3,7 +3,7 @@ import _ from "lodash";
 import assert from "assert";
 import fs from "fs";
 import path from "path";
-import { getAllSwapEvents, getAllSyncEvents, getAllTransferEvents } from "../cache";
+import { getAllEvents, getAllSwapEvents, getAllSyncEvents, getAllTransferEvents } from "../cache";
 
 const fetchPriceHistoryForPair = async (req: express.Request, res: express.Response) => {
   try {
@@ -95,6 +95,34 @@ const fetchLiquidityPoolsForAddress = async (req: express.Request, res: express.
   }
 };
 
+const fetchEvents = async (req: express.Request, res: express.Response) => {
+  try {
+    const { params, query } = _.pick(req, ["query", "params"]);
+    const allEvents = await getAllEvents();
+    let filteredEvents = _.filter(allEvents, ev => ev.chainId === params.chainId);
+    const length = filteredEvents.length;
+
+    if (query.eventName && _.includes(["mint", "swap", "burn"], query.eventName as string)) {
+      filteredEvents = _.filter(filteredEvents, ev => ev.eventName.toLowerCase() === (query.eventName as string).toLowerCase());
+    }
+
+    if (query.page) {
+      filteredEvents = _.slice(filteredEvents, (parseInt(query.page as string) - 1) * 20, parseInt(query.page as string) * 20);
+    } else {
+      filteredEvents = _.slice(filteredEvents, 0, 20);
+    }
+
+    const result = {
+      totalItems: length,
+      items: filteredEvents
+    };
+
+    return res.status(200).json({ result });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 const fetchListing = async (req: express.Request, res: express.Response) => {
   try {
     const { params } = _.pick(req, ["params"]);
@@ -115,5 +143,6 @@ router.get("/swap_events/:pair/:chainId", fetchSwapEventsForPairUsingPeriod);
 router.get("/pools/:chainId/:to", fetchLiquidityPoolsForAddress);
 router.get("/listing/:chainId", fetchListing);
 router.get("/top_pairs/:chainId", fetchTopPairs);
+router.get("/events/:chainId", fetchEvents);
 
 export default router;
