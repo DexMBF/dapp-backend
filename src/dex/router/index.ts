@@ -65,7 +65,7 @@ const fetchTopPairs = async (req: express.Request, res: express.Response) => {
       else occurrences[ev.pair] = _.add(occurrences[ev.pair], 1);
     });
 
-    const result = _.sortBy(Object.keys(occurrences), key => occurrences[key]).slice(0, 20);
+    const result = _.sortBy(Object.keys(occurrences), (a, b) => occurrences[b] - occurrences[a]).slice(0, 20);
     return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
