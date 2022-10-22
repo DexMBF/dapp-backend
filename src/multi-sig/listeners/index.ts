@@ -11,7 +11,7 @@ import { handleMultiSigDeployedEvent, getPastLogsForMultiSigAction } from "./han
 const chains = supportedChains[env === "production" ? "mainnet" : "testnet"] as any;
 
 // Event ID
-const stakingPoolDeployedEventId = hashId("StakingPoolDeployed(address,address,address,address,uint256,uint256,uint256)");
+const multiSigDeployedEventId = hashId("MultiSigDeployed(address,address[],uint256)");
 
 function listenForAllMultiSigActionsEvents() {
   try {
@@ -20,7 +20,7 @@ function listenForAllMultiSigActionsEvents() {
       const address = actions[key as keyof typeof actions];
 
       logger("----- Initializing watch for %s -----", address);
-      provider.on({ address, topics: [stakingPoolDeployedEventId] }, handleMultiSigDeployedEvent(hexValue(parseInt(key))));
+      provider.on({ address, topics: [multiSigDeployedEventId] }, handleMultiSigDeployedEvent(hexValue(parseInt(key))));
     });
   } catch (error: any) {
     logger(error.message);
