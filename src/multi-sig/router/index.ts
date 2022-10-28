@@ -23,6 +23,6 @@ const fetchAllMultiSigWalletsForUser = async (req: express.Request, res: express
 
 const router = Router();
 
-router.get("/wallets/:signatory", fetchAllMultiSigWalletsForUser);
+router.get("/wallets/:chainId/:signatory", fetchAllMultiSigWalletsForUser);
 
 export default router;

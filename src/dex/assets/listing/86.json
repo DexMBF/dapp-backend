@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Wrapped Gatecoin",
+    "address": "0x5CaD84E500d73A9bcCdeB21eDD9720FFb7531c56",
+    "symbol": "WGATE",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/8183/thumb/gt.png?1556085624"
+  },
+  {
+    "name": "Tether USD",
+    "address": "0x4151ab5072198d0843cd2999590ef292f49d6c66",
+    "symbol": "USDT",
+    "decimals": 18,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0x55d398326f99059fF775485246999027B3197955.png"
+  },
+  {
+    "name": "Gatecoin",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "GT",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/8183/thumb/gt.png?1556085624"
+  }
+]

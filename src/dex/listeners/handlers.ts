@@ -2,7 +2,7 @@ import { Interface } from "@ethersproject/abi";
 import { hexValue } from "@ethersproject/bytes";
 import { abi } from "quasar-v1-core/artifacts/contracts/QuasarFactory.sol/QuasarFactory.json";
 import assert from "assert";
-import { getLastBlockNumberForFactory, propagateLastBlockNumberForFactory } from "../cache";
+import { getLastBlockNumberForFactory, propagateLastBlockNumberForFactory, propagateLastBlockNumberForPairs } from "../cache";
 import { PairModel, pairs } from "../db/models";
 import { watchPair } from "./helpers/pairs";
 import xInfo from "../assets/__chains__routers__factories.json";
@@ -26,7 +26,8 @@ export const handlePairCreatedEvent = (url: string, chainId: string) => {
     logger("----- New pair created %s -----", pair);
 
     await pushPairToDB(pair, token0, token1, chainId);
-    await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
+    await propagateLastBlockNumberForFactory(log.blockNumber, chainId);
+    await propagateLastBlockNumberForPairs(pair, log.blockNumber, chainId);
     watchPair(url, pair, chainId);
   };
 };
@@ -35,33 +36,37 @@ export const getPastLogsForFactory = async (url: string, factory: string, chainI
   try {
     assert.equal(factory, xInfo[parseInt(chainId) as unknown as keyof typeof xInfo].factory, "factories do not match");
     logger("----- Retrieving last propagated block for factory %s -----", factory);
-    const lastPropagatedBlockForFactory = await getLastBlockNumberForFactory(chainId);
+    let lastPropagatedBlockForFactory = await getLastBlockNumberForFactory(chainId);
     logger("----- Last propagated block for factory %s is %d", factory, lastPropagatedBlockForFactory);
 
-    if (lastPropagatedBlockForFactory > 0) {
+    if (lastPropagatedBlockForFactory === 0) {
       const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
-      const logs = await rpcCall(parseInt(chainId), {
-        method: "eth_getLogs",
-        params: [{ fromBlock: hexValue(lastPropagatedBlockForFactory + 1), toBlock: blockNumber, address: factory, topics: [] }]
-      });
+      lastPropagatedBlockForFactory = parseInt(blockNumber);
+      await propagateLastBlockNumberForFactory(blockNumber, chainId);
+    }
 
-      logger("----- Iterating logs for factory %s -----", factory);
-      for (const log of logs) {
-        {
-          const { args, name } = factoryAbiInterface.parseLog(log);
+    const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
+    const logs = await rpcCall(parseInt(chainId), {
+      method: "eth_getLogs",
+      params: [{ fromBlock: hexValue(lastPropagatedBlockForFactory + 1), toBlock: blockNumber, address: factory, topics: [] }]
+    });
 
-          switch (name) {
-            case "PairCreated": {
-              const [token0, token1, pair] = args;
-              logger("----- New pair created %s -----", pair);
-              await pushPairToDB(pair, token0, token1, chainId);
-              await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
-              watchPair(url, pair, chainId);
-              break;
-            }
-            default: {
-              break;
-            }
+    logger("----- Iterating logs for factory %s -----", factory);
+    for (const log of logs) {
+      {
+        const { args, name } = factoryAbiInterface.parseLog(log);
+
+        switch (name) {
+          case "PairCreated": {
+            const [token0, token1, pair] = args;
+            logger("----- New pair created %s -----", pair);
+            await pushPairToDB(pair, token0, token1, chainId);
+            await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
+            watchPair(url, pair, chainId);
+            break;
+          }
+          default: {
+            break;
           }
         }
       }
