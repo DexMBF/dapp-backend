@@ -5,6 +5,7 @@ import { stakingPoolsRouter, syncAll as syncStakingPoolDB, handleStakingPoolEven
 import { multiSigRouter, syncAll as syncMultiSigDB, handleMultiSigActionsEvents } from "./multi-sig";
 import logger from "./shared/log";
 import { initConnection as initRedisConnection } from "./shared/cache/redis";
+import { env } from "./shared/environment";
 
 const app: express.Application = express();
 const port = parseInt(process.env.PORT || "7755");
@@ -40,5 +41,5 @@ app.listen(port, () => {
   syncMultiSigDB();
   handleMultiSigActionsEvents();
 
-  logger("Everything synced and app is running on port %d", port);
+  logger("Everything synced and app is running on port %d in %s", port, env);
 });

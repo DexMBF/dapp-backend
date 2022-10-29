@@ -10,7 +10,8 @@
     "name": "Tether USD",
     "address": "0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d",
     "symbol": "USDT",
-    "decimals": 6
+    "decimals": 6,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0x55d398326f99059fF775485246999027B3197955.png"
   },
   {
     "name": "Wrapped Brise",
