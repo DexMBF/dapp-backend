@@ -30,7 +30,7 @@ function listenForAllMultiSigActionsEvents() {
 function getPastMultiSigActionsEvents() {
   try {
     _.keys(chains).forEach(async key => {
-      await getPastLogsForMultiSigAction(chains[key].rpcUrl, actions[key as keyof typeof actions], hexValue(parseInt(key)));
+      await getPastLogsForMultiSigAction(actions[key as keyof typeof actions], hexValue(parseInt(key)));
     });
   } catch (error: any) {
     logger(error.message);

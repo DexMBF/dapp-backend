@@ -3,12 +3,13 @@ import _ from "lodash";
 import assert from "assert";
 import { stakingPools } from "../db/models";
 import specialStakingPools from "../assets/__special__staking__pools.json";
-import { getAllStakeEvents } from "../cache";
+import { getAllStakeEventsByChainId } from "../cache";
 
 const fetchAllStakingPools = async (req: express.Request, res: express.Response) => {
   try {
     const { params, query } = _.pick(req, ["params", "query"]);
-    const result = _.map(
+    const length = await stakingPools.countAllStakingPools({ where: { chainId: params.chainId } });
+    const items = _.map(
       await stakingPools.getAllStakingPools({
         limit: 20,
         offset: query.page ? _.subtract(parseInt(query.page as string), 1) * 20 : 0,
@@ -16,6 +17,11 @@ const fetchAllStakingPools = async (req: express.Request, res: express.Response)
       }),
       pool => pool.id
     );
+
+    const result = {
+      totalItems: length,
+      items
+    };
     return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
@@ -36,7 +42,8 @@ const fetchAllSpecialStakingPools = async (req: express.Request, res: express.Re
 const fetchAllStakingPoolsByOwner = async (req: express.Request, res: express.Response) => {
   try {
     const { params, query } = _.pick(req, ["params", "query"]);
-    const result = _.map(
+    const length = await stakingPools.countAllStakingPools({ where: { chain: params.chainId, owner: params.owner } });
+    const items = _.map(
       await stakingPools.getAllStakingPools({
         where: { chainId: params.chainId, owner: params.owner },
         limit: 20,
@@ -44,6 +51,11 @@ const fetchAllStakingPoolsByOwner = async (req: express.Request, res: express.Re
       }),
       pool => pool.id
     );
+
+    const result = {
+      totalItems: length,
+      items
+    };
 
     return res.status(200).json({ result });
   } catch (error: any) {
@@ -54,16 +66,19 @@ const fetchAllStakingPoolsByOwner = async (req: express.Request, res: express.Re
 const fetchAllUsersStakes = async (req: express.Request, res: express.Response) => {
   try {
     const { params, query } = _.pick(req, ["params", "query"]);
-    let result = await getAllStakeEvents();
+    let result: any = await getAllStakeEventsByChainId(params.chainId);
 
     if (query.page) {
       assert(parseInt(query.page as string) > 0, "pagination must begin at 1");
     }
 
-    result = _.filter(result, ev => ev.staker.toLowerCase() === params.staker.toLowerCase() && ev.chainId === params.chainId).slice(
-      query.page ? _.subtract(parseInt(query.page as string), 1) * 20 : 0,
-      query.page ? parseInt(query.page as string) * 20 : 20
-    );
+    result = _.filter(result, ev => ev.staker.toLowerCase() === params.staker.toLowerCase());
+
+    const length = result.length;
+    result = {
+      totalItems: length,
+      items: result.slice(query.page ? _.subtract(parseInt(query.page as string), 1) * 20 : 0, query.page ? parseInt(query.page as string) * 20 : 20)
+    };
     return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });

@@ -11,5 +11,12 @@
     "address": "0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d",
     "symbol": "USDT",
     "decimals": 6
+  },
+  {
+    "name": "Wrapped Brise",
+    "address": "0xD75411C6A3fEf2278E51EEaa73cdE8352c59eFEd",
+    "symbol": "WBRISE",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17388/thumb/bitgert.png?1660272192"
   }
 ]

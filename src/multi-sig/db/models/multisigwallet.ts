@@ -1,4 +1,4 @@
-import { DataTypes, FindOptions } from "sequelize";
+import { CountOptions, DataTypes, FindOptions } from "sequelize";
 import _ from "lodash";
 import buildModel from "../../../shared/db";
 
@@ -55,8 +55,19 @@ function getMultisigWallet(pk: string) {
   }
 }
 
+function countMultisigWallets(opts?: Omit<CountOptions<any>, "group">) {
+  try {
+    return new Promise<number>((resolve, reject) => {
+      model.count(opts).then(resolve).catch(reject);
+    });
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
 export default _.merge(model, {
   addMultiSigWallet,
   getAllMultisigWallets,
-  getMultisigWallet
+  getMultisigWallet,
+  countMultisigWallets
 });

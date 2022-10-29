@@ -159,7 +159,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                 );
                 const [reserve0, reserve1] = args;
                 await propagateSyncEventData(model.id, reserve0.toString(), reserve1.toString(), log.transactionHash, chainId);
-                await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                await propagateLastBlockNumberForPairs(model.id, log.blockNumber, chainId);
                 break;
               }
               case "Swap": {
@@ -188,7 +188,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                   chainId,
                   log.transactionHash
                 );
-                await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                await propagateLastBlockNumberForPairs(model.id, log.blockNumber, chainId);
                 break;
               }
               case "Transfer": {
@@ -200,7 +200,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                 );
                 const [from, to, amount] = args;
                 await propagateTransferEventData(model.id, from, to, amount.toString(), log.transactionHash, chainId);
-                await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                await propagateLastBlockNumberForPairs(model.id, log.blockNumber, chainId);
                 break;
               }
               case "Mint": {
@@ -212,7 +212,7 @@ export const getPastLogsForAllPairs = async (url: string, chainId: string) => {
                   model.id
                 );
                 await propagateEventForPairs(model.id, amount0.toString(), amount1.toString(), "mint", chainId, log.transactionHash);
-                await propagateLastBlockNumberForPairs(model.id, hexValue(log.blockNumber), chainId);
+                await propagateLastBlockNumberForPairs(model.id, log.blockNumber, chainId);
                 break;
               }
               case "Burn": {

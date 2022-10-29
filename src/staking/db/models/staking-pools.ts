@@ -1,4 +1,4 @@
-import { DataTypes, FindOptions } from "sequelize";
+import { CountOptions, DataTypes, FindOptions } from "sequelize";
 import _ from "lodash";
 import buildModel from "../../../shared/db";
 
@@ -74,6 +74,16 @@ function getStakingPool(pk: string) {
   }
 }
 
+function countAllStakingPools(opts?: Omit<CountOptions<any>, "group">) {
+  try {
+    return new Promise<number>((resolve, reject) => {
+      model.count(opts).then(resolve).catch(reject);
+    });
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
 function updateStakingPoolById(id: string, update: any) {
   return new Promise<StakingPoolModel>((resolve, reject) => {
     model
@@ -88,5 +98,6 @@ export default _.merge(model, {
   addStakingPool,
   getAllStakingPools,
   getStakingPool,
-  updateStakingPoolById
+  updateStakingPoolById,
+  countAllStakingPools
 });

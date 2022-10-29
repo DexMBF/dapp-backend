@@ -23,7 +23,7 @@ const handleStakedEvent = (poolId: string, chainId: string) => {
       const [amount, token, timestamp, staker, stakeId] = args;
       logger("----- Stake occurred on pool %s -----", poolId);
       await propagateStakeEventData(poolId, amount.toString(), token, _.multiply(timestamp, 1000), staker, stakeId, log.transactionHash, chainId);
-      await propagateLastBlockNumberForPool(poolId, hexValue(log.blockNumber), chainId);
+      await propagateLastBlockNumberForPool(poolId, log.blockNumber, chainId);
     } catch (error: any) {
       logger(error.message);
     }
@@ -37,7 +37,7 @@ const handleUnstakedEvent = (poolId: string, chainId: string) => {
       const [amountUnstaked, stakeId] = args;
       logger("----- Unstaking occurred on pool %s -----", poolId);
       await propagateUnstakeEventData(poolId, stakeId, amountUnstaked.toString(), chainId);
-      await propagateLastBlockNumberForPool(poolId, hexValue(log.blockNumber), chainId);
+      await propagateLastBlockNumberForPool(poolId, log.blockNumber, chainId);
     } catch (error: any) {
       logger(error.message);
     }
@@ -51,7 +51,7 @@ const handleOwnershipTransferredEvent = (poolId: string, chainId: string) => {
       logger("----- Ownership transfer occured on pool %s -----", poolId);
       const [, owner] = args;
       await stakingPools.updateStakingPoolById(poolId, { owner });
-      await propagateLastBlockNumberForPool(poolId, hexValue(log.blockNumber), chainId);
+      await propagateLastBlockNumberForPool(poolId, log.blockNumber, chainId);
     } catch (error: any) {
       logger(error.message);
     }
@@ -85,70 +85,73 @@ export const getPastLogsForAllPools = async (url: string, chainId: string) => {
     for (const model of allPools) {
       {
         logger("----- Retrieving last propagated block for pool %s -----", model.id);
-        const lastPropagatedBlockForPool = await getLastBlockNumberForPool(model.id, chainId);
+        let lastPropagatedBlockForPool = await getLastBlockNumberForPool(model.id, chainId);
         logger("----- Last propagated block for pool %s is %d", model.id, lastPropagatedBlockForPool);
-        if (lastPropagatedBlockForPool > 0) {
-          const logs = await rpcCall(parseInt(chainId), {
-            method: "eth_getLogs",
-            params: [{ fromBlock: hexValue(lastPropagatedBlockForPool + 1), toBlock: blockNumber, address: model.id, topics: [] }]
-          });
 
-          logger("----- Iterating logs for pair %s -----", model.id);
-          for (const log of logs) {
-            {
-              const { args, name } = stakingPoolAbiInterface.parseLog(log);
+        if (lastPropagatedBlockForPool === 0) {
+          lastPropagatedBlockForPool = parseInt(blockNumber);
+          await propagateLastBlockNumberForPool(model.id, blockNumber, chainId);
+        }
+        const logs = await rpcCall(parseInt(chainId), {
+          method: "eth_getLogs",
+          params: [{ fromBlock: hexValue(lastPropagatedBlockForPool + 1), toBlock: blockNumber, address: model.id, topics: [] }]
+        });
 
-              switch (name) {
-                case "Staked": {
-                  logger(
-                    "----- Retrieving staked event with transaction hash %s and block number %s for pool %s -----",
-                    log.transactionHash,
-                    log.blockNumber,
-                    model.id
-                  );
-                  const [amount, token, timestamp, staker, stakeId] = args;
-                  await propagateStakeEventData(
-                    model.id,
-                    amount.toString(),
-                    token,
-                    _.multiply(timestamp, 1000),
-                    staker,
-                    stakeId,
-                    log.transactionHash,
-                    chainId
-                  );
-                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
-                  break;
-                }
-                case "Unstaked": {
-                  logger(
-                    "----- Retrieving unstaked event with transaction hash %s and block number %s for pool %s -----",
-                    log.transactionHash,
-                    log.blockNumber,
-                    model.id
-                  );
-                  const [amountUnstaked, stakeId] = args;
-                  await propagateUnstakeEventData(model.id, stakeId, amountUnstaked.toString(), chainId);
-                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
-                  break;
-                }
-                case "OwnershipTransferred": {
-                  logger(
-                    "----- Retrieving ownership transferred event with transaction hash %s and block number %s for pool %s -----",
-                    log.transactionHash,
-                    log.blockNumber,
-                    model.id
-                  );
+        logger("----- Iterating logs for pair %s -----", model.id);
+        for (const log of logs) {
+          {
+            const { args, name } = stakingPoolAbiInterface.parseLog(log);
 
-                  const { args } = stakingPoolAbiInterface.parseLog(log);
-                  const [, owner] = args;
-                  await stakingPools.updateStakingPoolById(model.id, { owner });
-                  await propagateLastBlockNumberForPool(model.id, hexValue(log.blockNumber), chainId);
-                  break;
-                }
-                default: {
-                  break;
-                }
+            switch (name) {
+              case "Staked": {
+                logger(
+                  "----- Retrieving staked event with transaction hash %s and block number %s for pool %s -----",
+                  log.transactionHash,
+                  log.blockNumber,
+                  model.id
+                );
+                const [amount, token, timestamp, staker, stakeId] = args;
+                await propagateStakeEventData(
+                  model.id,
+                  amount.toString(),
+                  token,
+                  _.multiply(timestamp, 1000),
+                  staker,
+                  stakeId,
+                  log.transactionHash,
+                  chainId
+                );
+                await propagateLastBlockNumberForPool(model.id, log.blockNumber, chainId);
+                break;
+              }
+              case "Unstaked": {
+                logger(
+                  "----- Retrieving unstaked event with transaction hash %s and block number %s for pool %s -----",
+                  log.transactionHash,
+                  log.blockNumber,
+                  model.id
+                );
+                const [amountUnstaked, stakeId] = args;
+                await propagateUnstakeEventData(model.id, stakeId, amountUnstaked.toString(), chainId);
+                await propagateLastBlockNumberForPool(model.id, log.blockNumber, chainId);
+                break;
+              }
+              case "OwnershipTransferred": {
+                logger(
+                  "----- Retrieving ownership transferred event with transaction hash %s and block number %s for pool %s -----",
+                  log.transactionHash,
+                  log.blockNumber,
+                  model.id
+                );
+
+                const { args } = stakingPoolAbiInterface.parseLog(log);
+                const [, owner] = args;
+                await stakingPools.updateStakingPoolById(model.id, { owner });
+                await propagateLastBlockNumberForPool(model.id, log.blockNumber, chainId);
+                break;
+              }
+              default: {
+                break;
               }
             }
           }

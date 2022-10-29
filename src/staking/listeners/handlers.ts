@@ -31,7 +31,7 @@ export const handleStakingPoolDeployedEvent = (url: string, chainId: string) => 
     const { args } = actionsAbiInterface.parseLog(log);
     const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
     await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
-    await propagateLastBlockNumberForAction(hexValue(log.blockNumber), chainId);
+    await propagateLastBlockNumberForAction(log.blockNumber, chainId);
     watchPool(url, poolId, chainId);
   };
 };
@@ -40,33 +40,35 @@ export const getPastLogsForActions = async (url: string, actions: string, chainI
   try {
     assert.equal(actions, xInfo[parseInt(chainId) as unknown as keyof typeof xInfo].actions, "actions do not match");
     logger("----- Retrieving last propagated block for actions %s -----", actions);
-    const lastPropagatedBlockForActions = await getLastBlockNumberForAction(chainId);
+    const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
+    let lastPropagatedBlockForActions = await getLastBlockNumberForAction(chainId);
     logger("----- Last propagated block for actions %s is %d", actions, lastPropagatedBlockForActions);
 
-    if (lastPropagatedBlockForActions > 0) {
-      const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
-      const logs = await rpcCall(parseInt(chainId), {
-        method: "eth_getLogs",
-        params: [{ fromBlock: hexValue(lastPropagatedBlockForActions + 1), toBlock: blockNumber, address: actions, topics: [] }]
-      });
+    if (lastPropagatedBlockForActions === 0) {
+      lastPropagatedBlockForActions = parseInt(blockNumber);
+      await propagateLastBlockNumberForAction(blockNumber, chainId);
+    }
+    const logs = await rpcCall(parseInt(chainId), {
+      method: "eth_getLogs",
+      params: [{ fromBlock: hexValue(lastPropagatedBlockForActions + 1), toBlock: blockNumber, address: actions, topics: [] }]
+    });
 
-      logger("----- Iterating logs for actions %s -----", actions);
-      for (const log of logs) {
-        {
-          const { args, name } = actionsAbiInterface.parseLog(log);
+    logger("----- Iterating logs for actions %s -----", actions);
+    for (const log of logs) {
+      {
+        const { args, name } = actionsAbiInterface.parseLog(log);
 
-          switch (name) {
-            case "StakingPoolDeployed": {
-              const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
-              logger("----- New pool created %s -----", poolId);
-              await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
-              await propagateLastBlockNumberForAction(hexValue(log.blockNumber), chainId);
-              watchPool(url, poolId, chainId);
-              break;
-            }
-            default: {
-              break;
-            }
+        switch (name) {
+          case "StakingPoolDeployed": {
+            const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
+            logger("----- New pool created %s -----", poolId);
+            await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
+            await propagateLastBlockNumberForAction(log.blockNumber, chainId);
+            watchPool(url, poolId, chainId);
+            break;
+          }
+          default: {
+            break;
           }
         }
       }

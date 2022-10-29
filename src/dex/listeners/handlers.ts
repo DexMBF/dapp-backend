@@ -37,15 +37,14 @@ export const getPastLogsForFactory = async (url: string, factory: string, chainI
     assert.equal(factory, xInfo[parseInt(chainId) as unknown as keyof typeof xInfo].factory, "factories do not match");
     logger("----- Retrieving last propagated block for factory %s -----", factory);
     let lastPropagatedBlockForFactory = await getLastBlockNumberForFactory(chainId);
+    const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
     logger("----- Last propagated block for factory %s is %d", factory, lastPropagatedBlockForFactory);
 
     if (lastPropagatedBlockForFactory === 0) {
-      const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
       lastPropagatedBlockForFactory = parseInt(blockNumber);
       await propagateLastBlockNumberForFactory(blockNumber, chainId);
     }
 
-    const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
     const logs = await rpcCall(parseInt(chainId), {
       method: "eth_getLogs",
       params: [{ fromBlock: hexValue(lastPropagatedBlockForFactory + 1), toBlock: blockNumber, address: factory, topics: [] }]
@@ -61,7 +60,7 @@ export const getPastLogsForFactory = async (url: string, factory: string, chainI
             const [token0, token1, pair] = args;
             logger("----- New pair created %s -----", pair);
             await pushPairToDB(pair, token0, token1, chainId);
-            await propagateLastBlockNumberForFactory(hexValue(log.blockNumber), chainId);
+            await propagateLastBlockNumberForFactory(log.blockNumber, chainId);
             watchPair(url, pair, chainId);
             break;
           }

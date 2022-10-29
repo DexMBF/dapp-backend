@@ -12,7 +12,7 @@ import { getPastLogsForAllPools } from "./helpers/staking-pools";
 const chains = supportedChains[env === "production" ? "mainnet" : "testnet"] as any;
 
 // Event ID
-const stakingPoolDeployedEventId = hashId("StakingPoolDeployed(address,address,address,address,uint256,uint256,uint256)");
+const stakingPoolDeployedEventId = hashId("StakingPoolDeployed(address,address,address,address,uint16,uint16,uint8)");
 
 function listenForAllStakingPoolEvents() {
   try {
