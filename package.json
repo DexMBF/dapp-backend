@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "format": "prettier --write **/**/*.{js,json,ts}",
     "build": "rm -rf build && tsc -p .",
-    "dev": "cross-env DEBUG=app ts-node src/index"
+    "dev": "cross-env DEBUG=app ts-node src/index",
+    "start": "cross-env DEBUG=app NODE_ENV=production node build/index",
+    "run:listing:checks": "node check-listings.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,7 @@
   "dependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/address": "^5.7.0",
+    "@ethersproject/bignumber": "^5.7.0",
     "@ethersproject/bytes": "^5.7.0",
     "@ethersproject/constants": "^5.7.0",
     "@ethersproject/hash": "^5.7.0",
@@ -42,7 +45,9 @@
     "quasar-v1-core": "^1.0.1",
     "redis": "^4.3.1",
     "sequelize": "^6.23.2",
-    "socket.io": "^4.5.2"
+    "socket.io": "^4.5.2",
+    "vefi-multi-sig": "^2.0.0",
+    "vefi-token-launchpad-staking": "^2.0.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
@@ -50,6 +55,7 @@
     "@types/morgan": "^1.9.3",
     "@types/node": "^18.7.23",
     "ts-node": "^10.9.1",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "validator": "^13.7.0"
   }
 }

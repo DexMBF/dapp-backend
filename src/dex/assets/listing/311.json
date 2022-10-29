@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Omax Coin",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "OMAX",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/19853/thumb/omxlogo.png?1636061849"
+  },
+  {
+    "name": "Wrapped OMAX",
+    "address": "0x2e19F01B81628CCd8cFce9F7d9F2fACC77343b7c",
+    "symbol": "WOMAX",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/19853/thumb/omxlogo.png?1636061849"
+  }
+]

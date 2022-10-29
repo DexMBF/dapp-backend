@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Brise",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "BRISE",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17388/thumb/bitgert.png?1660272192"
+  },
+  {
+    "name": "Tether USD",
+    "address": "0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d",
+    "symbol": "USDT",
+    "decimals": 6,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0x55d398326f99059fF775485246999027B3197955.png"
+  },
+  {
+    "name": "Wrapped Brise",
+    "address": "0xD75411C6A3fEf2278E51EEaa73cdE8352c59eFEd",
+    "symbol": "WBRISE",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17388/thumb/bitgert.png?1660272192"
+  }
+]

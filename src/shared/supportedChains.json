@@ -2,15 +2,30 @@
   "testnet": {
     "97": {
       "name": "Binance Smartchain Testnet",
-      "rpcUrl": "https://bsctestapi.terminet.io/rpc",
+      "rpcUrl": "https://data-seed-prebsc-1-s3.binance.org:8545",
       "explorerUrl": "https://testnet.bscscan.com"
     }
   },
   "mainnet": {
     "56": {
       "name": "Binance Smartchain",
-      "rpcUrl": "https://bsc-dataseed3.binance.org",
+      "rpcUrl": "https://bsc-dataseed4.defibit.io",
       "explorerUrl": "https://bscscan.com"
+    },
+    "311": {
+      "name": "Omax Chain",
+      "rpcUrl": "https://mainapi.omaxray.com",
+      "explorerUrl": "https://omaxray.com"
+    },
+    "32520": {
+      "name": "Bitgert Mainnet",
+      "rpcUrl": "https://rpc.icecreamswap.com",
+      "explorerUrl": "https://brisescan.com"
+    },
+    "86": {
+      "name": "Gatechain",
+      "rpcUrl": "https://evm.gatenode.cc",
+      "explorerUrl": "https://gatescan.org"
     }
   }
 }

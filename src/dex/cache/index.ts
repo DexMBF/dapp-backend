@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { cacheItem, closeConnection, initConnection, itemExists, readItem, getAllKeysMatching } from "../../shared/cache/redis";
+import { cacheItem, itemExists, readItem, getAllKeysMatching, hCacheItem, hReadItems } from "../../shared/cache/redis";
 
 const cacheKeyPrefix = "redis::cache::dex";
 
@@ -14,24 +14,18 @@ export async function propagateSwapEventData(
   chainId: string
 ) {
   try {
-    await initConnection();
-    const swapKey = cacheKeyPrefix.concat("::", "swaps::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
-    await cacheItem(
-      swapKey,
-      {
-        pair,
-        amount0In,
-        amount1In,
-        amount0Out,
-        amount1Out,
-        to,
-        transactionHash,
-        chainId,
-        timestamp: Date.now()
-      },
-      60 * 24 * 30
-    );
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::swaps::", chainId);
+    await hCacheItem(key, transactionHash, {
+      pair,
+      amount0In,
+      amount1In,
+      amount0Out,
+      amount1Out,
+      to,
+      transactionHash,
+      chainId,
+      timestamp: Date.now()
+    });
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -39,21 +33,15 @@ export async function propagateSwapEventData(
 
 export async function propagateSyncEventData(pair: string, reserve0: string, reserve1: string, transactionHash: string, chainId: string) {
   try {
-    await initConnection();
-    const syncKey = cacheKeyPrefix.concat("::", "syncs::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
-    await cacheItem(
-      syncKey,
-      {
-        pair,
-        reserve0,
-        reserve1,
-        transactionHash,
-        chainId,
-        timestamp: Date.now()
-      },
-      60 * 24 * 30
-    );
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::syncs::", chainId);
+    await hCacheItem(key, transactionHash, {
+      pair,
+      reserve0,
+      reserve1,
+      transactionHash,
+      chainId,
+      timestamp: Date.now()
+    });
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -61,10 +49,16 @@ export async function propagateSyncEventData(pair: string, reserve0: string, res
 
 export async function propagateTransferEventData(pair: string, from: string, to: string, amount: string, transactionHash: string, chainId: string) {
   try {
-    await initConnection();
-    const transferKey = cacheKeyPrefix.concat("::", "transfers::", pair, "::", transactionHash, "::", chainId, "::", Date.now().toString(16));
-    await cacheItem(transferKey, { pair, from, to, transactionHash, chainId, amount, timestamp: Date.now() }, 60 * 24 * 30);
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::transfers::", chainId);
+    await hCacheItem(key, transactionHash, {
+      pair,
+      from,
+      to,
+      amount,
+      transactionHash,
+      chainId,
+      timestamp: Date.now()
+    });
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -72,10 +66,8 @@ export async function propagateTransferEventData(pair: string, from: string, to:
 
 export async function propagateLastBlockNumberForFactory(blockNumber: string, chainId: string) {
   try {
-    await initConnection();
-    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);
-    await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::last_block::factory::", chainId);
+    await cacheItem(key, blockNumber);
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -83,10 +75,56 @@ export async function propagateLastBlockNumberForFactory(blockNumber: string, ch
 
 export async function propagateLastBlockNumberForPairs(pair: string, blockNumber: string, chainId: string) {
   try {
-    await initConnection();
-    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair, "::", chainId);
-    await cacheItem(lastBlockKey, blockNumber);
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::last_block::pairs::", pair, "::", chainId);
+    await cacheItem(key, blockNumber);
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function propagateEventForPairs(
+  pair: string,
+  amount1: string,
+  amount2: string,
+  eventName: string,
+  chainId: string,
+  transactionHash: string
+) {
+  try {
+    const key = cacheKeyPrefix.concat("::events::", chainId);
+    await hCacheItem(key, transactionHash, {
+      pair,
+      amount1,
+      amount2,
+      eventName,
+      chainId,
+      transactionHash,
+      timestamp: Date.now()
+    });
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
+export async function getAllEventsByChainId(chainId: string) {
+  try {
+    const key = cacheKeyPrefix.concat("::events::", chainId);
+
+    let events: Array<{
+      chainId: string;
+      amount1: string;
+      amount2: string;
+      pair: string;
+      eventName: string;
+      timestamp: number;
+      transactionHash: string;
+    }> = [];
+
+    const ev = await hReadItems(key);
+
+    for (const k of _.keys(ev)) events = _.concat(events, JSON.parse(ev[k]));
+
+    return Promise.resolve(events);
   } catch (error: any) {
     return Promise.reject(error);
   }
@@ -94,11 +132,8 @@ export async function propagateLastBlockNumberForPairs(pair: string, blockNumber
 
 export async function getLastBlockNumberForFactory(chainId: string) {
   try {
-    await initConnection();
-    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::factory::", chainId);
-    const i = await readItem(lastBlockKey);
-    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::last_block::factory::", chainId);
+    const lastBlock = (await itemExists(key)) ? parseInt((await readItem(key)) as string) : 0;
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
@@ -107,22 +142,18 @@ export async function getLastBlockNumberForFactory(chainId: string) {
 
 export async function getLastBlockNumberForPairs(pair: string, chainId: string) {
   try {
-    await initConnection();
-    const lastBlockKey = cacheKeyPrefix.concat("::", "last_block::pairs::", pair, "::", chainId);
-    const lastBlock = (await itemExists(lastBlockKey)) ? parseInt(((await readItem(lastBlockKey)) as string).replace('"', "")) : 0;
-    await closeConnection();
+    const key = cacheKeyPrefix.concat("::last_block::pairs::", pair, "::", chainId);
+    const lastBlock = (await itemExists(key)) ? parseInt((await readItem(key)) as string) : 0;
     return Promise.resolve(lastBlock);
   } catch (error) {
     return Promise.reject(error);
   }
 }
 
-export async function getAllSwapEvents() {
+export async function getAllSwapEventsByChainId(chainId: string) {
   try {
-    await initConnection();
-    const swapKey = cacheKeyPrefix.concat("::swaps::", "*");
-    const allMatchingKeys = await getAllKeysMatching(swapKey);
-    let allSwapEvents: Array<{
+    const key = cacheKeyPrefix.concat("::swaps::", chainId);
+    let events: Array<{
       pair: string;
       amount0In: string;
       amount1In: string;
@@ -134,24 +165,20 @@ export async function getAllSwapEvents() {
       timestamp: number;
     }> = [];
 
-    _.each(allMatchingKeys, async key => {
-      const item = JSON.parse((await readItem(key)) as string);
-      allSwapEvents = _.concat(allSwapEvents, item);
-    });
+    const ev = await hReadItems(key);
 
-    await closeConnection();
-    return Promise.resolve(allSwapEvents);
+    for (const k of _.keys(ev)) events = _.concat(events, JSON.parse(ev[k]));
+
+    return Promise.resolve(events);
   } catch (error) {
     return Promise.reject(error);
   }
 }
 
-export async function getAllSyncEvents() {
+export async function getAllSyncEventsByChainId(chainId: string) {
   try {
-    await initConnection();
-    const syncKey = cacheKeyPrefix.concat("::syncs::", "*");
-    const allMatchingKeys = await getAllKeysMatching(syncKey);
-    let allSyncEvents: Array<{
+    const key = cacheKeyPrefix.concat("::syncs::", chainId);
+    let events: Array<{
       pair: string;
       reserve0: string;
       reserve1: string;
@@ -160,28 +187,20 @@ export async function getAllSyncEvents() {
       timestamp: number;
     }> = [];
 
-    for (const key of allMatchingKeys) {
-      const item = JSON.parse((await readItem(key)) as string);
-      allSyncEvents = _.concat(allSyncEvents, item);
-    }
+    const ev = await hReadItems(key);
 
-    // _.forEach(allMatchingKeys, async key => {
+    for (const k of _.keys(ev)) events = _.concat(events, JSON.parse(ev[k]));
 
-    // });
-
-    await closeConnection();
-    return Promise.resolve(allSyncEvents);
+    return Promise.resolve(events);
   } catch (error) {
     return Promise.reject(error);
   }
 }
 
-export async function getAllTransferEvents() {
+export async function getAllTransferEventsByChainId(chainId: string) {
   try {
-    await initConnection();
-    const transferKey = cacheKeyPrefix.concat("::transfers::", "*");
-    const allMatchingKeys = await getAllKeysMatching(transferKey);
-    let allTransferEvents: Array<{
+    const key = cacheKeyPrefix.concat("::transfers::", chainId);
+    let events: Array<{
       pair: string;
       from: string;
       to: string;
@@ -191,17 +210,11 @@ export async function getAllTransferEvents() {
       timestamp: number;
     }> = [];
 
-    for (const key of allMatchingKeys) {
-      const item = JSON.parse((await readItem(key)) as string);
-      allTransferEvents = _.concat(allTransferEvents, item);
-    }
+    const ev = await hReadItems(key);
 
-    // _.each(allMatchingKeys, async key => {
+    for (const k of _.keys(ev)) events = _.concat(events, JSON.parse(ev[k]));
 
-    // });
-
-    await closeConnection();
-    return Promise.resolve(allTransferEvents);
+    return Promise.resolve(events);
   } catch (error: any) {
     return Promise.reject(error);
   }

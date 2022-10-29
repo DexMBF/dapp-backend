@@ -6,5 +6,21 @@
   "97": {
     "factory": "0x583DD96cD23602979333B98bB81dFd22b55faa46",
     "router": "0xD36e39a29dBdF0f1f02B271B165f9f08BECB631c"
+  },
+  "56": {
+    "factory": "0x6A6CFF59de25175A5BC9e4796C88a73b2c581b49",
+    "router": "0x1083270f423835feB4501Ea4F33B3C305c2A4B35"
+  },
+  "86": {
+    "factory": "0xb562b09Bc2317D18a82FD415B7Fb33540Db7e723",
+    "router": "0xD6447d2fA919811c41a064bDbdaB1E281F8de9B2"
+  },
+  "311": {
+    "factory": "0x64FAF984Bf60dE19e24238521814cA98574E3b00",
+    "router": "0xf886ABaCe837E5EC0CF7037B4d2198F7a1bf35B5"
+  },
+  "32520": {
+    "factory": "0x46e65AfC0BBF7cc037D82AC2eA9aaf560dD962Cc",
+    "router": "0x6202Fc26DF15bb3010df625e8874E8B55C42b46f"
   }
 }
