@@ -19,5 +19,89 @@
     "symbol": "WBRISE",
     "decimals": 18,
     "logoURI": "https://assets.coingecko.com/coins/images/17388/thumb/bitgert.png?1660272192"
+  },
+  {
+    "name": "Ardiansyah Crypto",
+    "address": "0xbfa6394b9898566652276f1Fb40d65e75787D66f",
+    "symbol": "ARCO",
+    "decimals": 9,
+    "logoURI": "https://i.ibb.co/BfBV6bJ/IMG-20221006-235619-367.png"
+  },
+  {
+    "name": "Numitor",
+    "address": "0x6718e47e74497d1564ee76d832309144b83ef8e8",
+    "symbol": "NUMI",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/25426/thumb/o59M49P.png?1651737564"
+  },
+  {
+    "name": "YOGO Token",
+    "address": "0xb361d5953e21cfde5cd62b89fdf40bc21903a6bb",
+    "symbol": "YOGO",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/25485/thumb/LOGO.png?1652067558"
+  },
+  {
+    "name": "Young Parrot",
+    "address": "0x11203a00a9134db8586381c4b2fca0816476b3fd",
+    "symbol": "YPC",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/25375/thumb/ypc.png?1651408981"
+  },
+  {
+    "name": "USD Coin",
+    "address": "0xcf2df9377a4e3c10e9ea29fdb8879d74c27fcde7",
+    "symbol": "USDC",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389"
+  },
+  {
+    "name": "Whale Maker Fund",
+    "address": "0xc89fcd3e1cf5a355fc41e160d18bac5f624610d4",
+    "symbol": "WMF",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/27433/thumb/IMG_20220923_042845_107.jpg?1663926656"
+  },
+  {
+    "name": "BrisePad",
+    "address": "0x71946a5c9da7c95ee804a9be561ec15a3f286a7d",
+    "symbol": "BPAD",
+    "decimals": 8,
+    "logoURI": "https://assets.coingecko.com/coins/images/26517/thumb/brisepad.jpg?1658451361"
+  },
+  {
+    "name": "Graphen",
+    "address": "0xb860ecd8400600c13342a751408737235e177077",
+    "symbol": "ELTG",
+    "decimals": 9,
+    "logoURI": "https://assets.coingecko.com/coins/images/25433/thumb/vjEBg-rD_400x400.jpg?1651739540"
+  },
+  {
+    "name": "Vefi Ecosystem Token",
+    "address": "0xd6447d2fa919811c41a064bdbdab1e281f8de9b2",
+    "symbol": "VEF",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/25434/thumb/LOGO-08.png?1651739718"
+  },
+  {
+    "name": "Evo.Finance",
+    "address": "0x267ae4ba9ce5ef3c87629812596b0d89ecbd81dd",
+    "symbol": "EVO",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/25373/thumb/evo.png?1651408436"
+  },
+  {
+    "name": "4D Twin Maps",
+    "address": "0x6d347fdcb302a5879545e01ecee7a176db23dcda",
+    "symbol": "MAP",
+    "decimals": 2,
+    "logoURI": "https://assets.coingecko.com/coins/images/25476/thumb/CoinMarketCapPNG_%281%29.png?1652089863"
+  },
+  {
+    "name": "Miidas NFT",
+    "address": "0x5b534a2df329195fd7e5c9aca1d9ffbda14a4963",
+    "symbol": "MIIDAS",
+    "decimals": 6,
+    "logoURI": "https://assets.coingecko.com/coins/images/26286/thumb/logo_miidas_round_500.png?1657087214"
   }
 ]
