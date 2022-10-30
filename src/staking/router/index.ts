@@ -42,7 +42,7 @@ const fetchAllSpecialStakingPools = async (req: express.Request, res: express.Re
 const fetchAllStakingPoolsByOwner = async (req: express.Request, res: express.Response) => {
   try {
     const { params, query } = _.pick(req, ["params", "query"]);
-    const length = await stakingPools.countAllStakingPools({ where: { chain: params.chainId, owner: params.owner } });
+    const length = await stakingPools.countAllStakingPools({ where: { chainId: params.chainId, owner: params.owner } });
     const items = _.map(
       await stakingPools.getAllStakingPools({
         where: { chainId: params.chainId, owner: params.owner },
