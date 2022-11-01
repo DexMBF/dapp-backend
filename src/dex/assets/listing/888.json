@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Wrapped WAN",
+    "address": "0x2e19F01B81628CCd8cFce9F7d9F2fACC77343b7c",
+    "symbol": "WWAN",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/3482/thumb/wanchain-logo.png?1547038221"
+  },
+  {
+    "name": "Wanchain",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "WAN",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/3482/thumb/wanchain-logo.png?1547038221"
+  },
+  {
+    "name": "BNB",
+    "address": "0x9DE0405064BEDd88399098b4fbb2f7fA462992E0",
+    "symbol": "wanBNB",
+    "decimals": 18,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
+  },
+  {
+    "name": "USD Coin",
+    "address": "0x52A9CEA01c4CBDd669883e41758B8eB8e8E2B34b",
+    "symbol": "wanUSDC",
+    "decimals": 6,
+    "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389"
+  },
+  {
+    "name": "Tether USD",
+    "address": "0x11e77E27Af5539872efEd10abaA0b408cfd9fBBD",
+    "symbol": "wanUSDT",
+    "decimals": 6,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0x55d398326f99059fF775485246999027B3197955.png"
+  },
+  {
+    "name": "Vox.Finance",
+    "address": "0xB24999Cf67e4EACBF164BcE9138136F33589d969",
+    "symbol": "VOX",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/12880/thumb/BSensIa.png?1603261093"
+  }
+]

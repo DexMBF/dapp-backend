@@ -26,6 +26,11 @@
       "name": "Gatechain",
       "rpcUrl": "https://evm.gatenode.cc",
       "explorerUrl": "https://gatescan.org"
+    },
+    "888": {
+      "name": "Wanchain",
+      "rpcUrl": "https://gwan-ssl.wandevs.org:56891",
+      "explorerUrl": "https://wanscan.org"
     }
   }
 }
