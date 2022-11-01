@@ -47,7 +47,7 @@
     "sequelize": "^6.23.2",
     "socket.io": "^4.5.2",
     "vefi-multi-sig": "^2.0.0",
-    "vefi-token-launchpad-staking": "^2.0.0"
+    "vefi-token-launchpad-staking": "^2.1.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.14",
