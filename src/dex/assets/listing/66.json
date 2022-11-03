@@ -1,0 +1,72 @@
+[
+  {
+    "name": "OKX Coin",
+    "address": "0x0000000000000000000000000000000000000000",
+    "symbol": "OKX",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/13708/thumb/WeChat_Image_20220118095654.png?1642471094"
+  },
+  {
+    "name": "Wrapped OKX",
+    "address": "0xf886ABaCe837E5EC0CF7037B4d2198F7a1bf35B5",
+    "symbol": "WOKX",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/13708/thumb/WeChat_Image_20220118095654.png?1642471094"
+  },
+  {
+    "name": "Tether USD",
+    "address": "0x382bb369d343125bfb2117af9c149795c6c65c50",
+    "symbol": "USDT",
+    "decimals": 18,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0x55d398326f99059fF775485246999027B3197955.png"
+  },
+  {
+    "name": "Blade",
+    "address": "0xa07403c1bd0c5cf53df07f15faa589241352527b",
+    "symbol": "BLADE",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/17677/thumb/LOGO_256_x_256.png?1632699362"
+  },
+  {
+    "name": "Crystal",
+    "address": "0xbd87c06d865a3717a16041acd8d33922e60e85ce",
+    "symbol": "CRYSTAL",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/18902/thumb/Crystal200X200.png?1633818428"
+  },
+  {
+    "name": "Celestial",
+    "address": "0x5ab622494ab7c5e81911558c9552dbd517f403fb",
+    "symbol": "CELT",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/18683/thumb/celt.png?1632966755"
+  },
+  {
+    "name": "OEC ETH",
+    "address": "0xef71ca2ee68f45b9ad6f72fbdb33d707b872315c",
+    "symbol": "ETHK",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/18537/thumb/0xef71ca2ee68f45b9ad6f72fbdb33d707b872315c.png?1632304986"
+  },
+  {
+    "name": "OKB",
+    "address": "0xdf54b6c6195ea4d948d03bfd818d365cf175cfc2",
+    "symbol": "OKB",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/4463/thumb/WeChat_Image_20220118095654.png?1642471050"
+  },
+  {
+    "name": "USD Coin",
+    "address": "0xc946daf81b08146b1c7a8da2a851ddf2b3eaaf85",
+    "symbol": "USDC",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png?1547042389"
+  },
+  {
+    "name": "OEC BTC",
+    "address": "0x54e4622dc504176b3bb432dccaf504569699a7ff",
+    "symbol": "BTCK",
+    "decimals": 18,
+    "logoURI": "https://assets.coingecko.com/coins/images/18527/thumb/11134.png?1632279146"
+  }
+]

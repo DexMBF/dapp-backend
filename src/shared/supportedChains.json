@@ -31,6 +31,11 @@
       "name": "Wanchain",
       "rpcUrl": "https://gwan-ssl.wandevs.org:56891",
       "explorerUrl": "https://wanscan.org"
+    },
+    "66": {
+      "name": "OKX Chain Mainnet",
+      "rpcUrl": "https://exchainrpc.okex.org",
+      "explorerUrl": "https://oklink.com/en/okc"
     }
   }
 }
