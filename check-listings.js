@@ -7,7 +7,7 @@ const {
 } = require("validator");
 const { isAddress } = require("@ethersproject/address");
 
-const supportedChains = [56, 86, 97, 311, 1337, 32520, 888];
+const supportedChains = [56, 86, 97, 311, 1337, 32520, 888, 66];
 
 (() => {
   const location = path.join(__dirname, "src/dex/assets/listing");
