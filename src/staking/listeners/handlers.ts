@@ -30,6 +30,8 @@ export const handleStakingPoolDeployedEvent = (url: string, chainId: string) => 
   return async (log: any) => {
     const { args } = actionsAbiInterface.parseLog(log);
     const [poolId, owner, tokenA, tokenB, tokenAAPY, tokenBAPY, tax] = args;
+    logger("----- New pool created %s -----", poolId);
+
     await pushStakingPoolToDB(poolId, tokenA, tokenB, tokenAAPY, tokenBAPY, tax, owner, chainId);
     await propagateLastBlockNumberForAction(log.blockNumber, chainId);
     watchPool(url, poolId, chainId);
@@ -42,7 +44,7 @@ export const getPastLogsForActions = async (url: string, actions: string, chainI
     logger("----- Retrieving last propagated block for actions %s -----", actions);
     const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
     let lastPropagatedBlockForActions = await getLastBlockNumberForAction(chainId);
-    logger("----- Last propagated block for actions %s is %d", actions, lastPropagatedBlockForActions);
+    logger("----- Last propagated block for actions %s is %d -----", actions, lastPropagatedBlockForActions);
 
     if (lastPropagatedBlockForActions === 0) {
       lastPropagatedBlockForActions = parseInt(blockNumber);

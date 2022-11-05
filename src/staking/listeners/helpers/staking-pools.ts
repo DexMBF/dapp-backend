@@ -86,7 +86,7 @@ export const getPastLogsForAllPools = async (url: string, chainId: string) => {
       {
         logger("----- Retrieving last propagated block for pool %s -----", model.id);
         let lastPropagatedBlockForPool = await getLastBlockNumberForPool(model.id, chainId);
-        logger("----- Last propagated block for pool %s is %d", model.id, lastPropagatedBlockForPool);
+        logger("----- Last propagated block for pool %s is %d -----", model.id, lastPropagatedBlockForPool);
 
         if (lastPropagatedBlockForPool === 0) {
           lastPropagatedBlockForPool = parseInt(blockNumber);

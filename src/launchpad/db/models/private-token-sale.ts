@@ -1,4 +1,4 @@
-import { DataTypes, FindOptions } from "sequelize";
+import { CountOptions, DataTypes, FindOptions } from "sequelize";
 import _ from "lodash";
 import buildModel from "../../../shared/db";
 
@@ -12,7 +12,6 @@ export type PrivateTokenSaleItemModel = {
   minContribution: string;
   maxContribution: string;
   startTime: string;
-  daysToLast: number;
   proceedsTo: string;
   endTime: string;
   admin: string;
@@ -21,7 +20,7 @@ export type PrivateTokenSaleItemModel = {
   updatedAt?: any;
 };
 
-const model = buildModel("PrivateTokenSale", {
+const model = buildModel("PrivateTokenSaleItem", {
   id: { type: DataTypes.STRING, primaryKey: true },
   token: { type: DataTypes.STRING, allowNull: false },
   tokensForSale: { type: DataTypes.BIGINT, allowNull: false },
@@ -31,27 +30,25 @@ const model = buildModel("PrivateTokenSale", {
   minContribution: { type: DataTypes.BIGINT, allowNull: false },
   maxContribution: { type: DataTypes.BIGINT, allowNull: false },
   startTime: { type: DataTypes.BIGINT, allowNull: false },
-  daysToLast: { type: DataTypes.INTEGER, allowNull: false },
   proceedsTo: { type: DataTypes.STRING, allowNull: false },
   endTime: { type: DataTypes.BIGINT, allowNull: false },
-  admin: { type: DataTypes.BIGINT, allowNull: false },
+  admin: { type: DataTypes.STRING, allowNull: false },
   chainId: { type: DataTypes.STRING, allowNull: false }
 });
 
 function addPrivateTokenSaleItem(
   id: string,
   token: string,
-  tokensForSale: string,
+  tokensForSale: number,
   chainId: string,
-  hardCap: string,
-  softCap: string,
-  presaleRate: string,
-  minContribution: string,
-  maxContribution: string,
-  startTime: string,
-  daysToLast: number,
+  hardCap: number,
+  softCap: number,
+  presaleRate: number,
+  minContribution: number,
+  maxContribution: number,
+  startTime: number,
   proceedsTo: string,
-  endTime: string,
+  endTime: number,
   admin: string
 ) {
   try {
@@ -68,7 +65,6 @@ function addPrivateTokenSaleItem(
           minContribution,
           maxContribution,
           startTime,
-          daysToLast,
           proceedsTo,
           endTime,
           admin
@@ -107,8 +103,19 @@ function getPrivateSaleItem(pk: string) {
   }
 }
 
+function countAllPrivateSaleItems(opts?: Omit<CountOptions<any>, "group">) {
+  try {
+    return new Promise<number>((resolve, reject) => {
+      model.count(opts).then(resolve).catch(reject);
+    });
+  } catch (error: any) {
+    return Promise.reject(error);
+  }
+}
+
 export default _.merge(model, {
   addPrivateTokenSaleItem,
   getAllPrivateSaleItems,
-  getPrivateSaleItem
+  getPrivateSaleItem,
+  countAllPrivateSaleItems
 });

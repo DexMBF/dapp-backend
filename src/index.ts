@@ -3,6 +3,7 @@ import morgan from "morgan";
 import { dexRouter, syncAll as syncDEXDB, handleDEXEvents } from "./dex";
 import { stakingPoolsRouter, syncAll as syncStakingPoolDB, handleStakingPoolEvents } from "./staking";
 import { multiSigRouter, syncAll as syncMultiSigDB, handleMultiSigActionsEvents } from "./multi-sig";
+import { launchpadRouter, syncAll as syncLaunchPadDBs, handleSaleCreatorsEvents } from "./launchpad";
 import logger from "./shared/log";
 import { initConnection as initRedisConnection } from "./shared/cache/redis";
 import { env } from "./shared/environment";
@@ -14,6 +15,7 @@ const router = Router();
 router.use("/dex", dexRouter);
 router.use("/staking", stakingPoolsRouter);
 router.use("/multisig", multiSigRouter);
+router.use("/launchpad", launchpadRouter);
 
 app.use(express.json());
 app.use(morgan("combined"));
@@ -43,6 +45,10 @@ app.listen(port, () => {
   // Sync DB and handle events
   syncMultiSigDB();
   handleMultiSigActionsEvents();
+
+  // Sync DB and handle events
+  syncLaunchPadDBs();
+  handleSaleCreatorsEvents();
 
   logger("Everything synced and app is running on port %d in %s", port, env);
 });
