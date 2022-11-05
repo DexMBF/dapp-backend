@@ -36,7 +36,9 @@ const getAllPrivateSaleItems = async (req: express.Request, res: express.Respons
       totalItems: allItemsCount
     };
     return res.status(200).json({ result });
-  } catch (error: any) {}
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
 };
 
 const router = Router();
