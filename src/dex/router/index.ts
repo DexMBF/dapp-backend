@@ -102,10 +102,10 @@ const fetchEvents = async (req: express.Request, res: express.Response) => {
   try {
     const { params, query } = _.pick(req, ["query", "params"]);
     const allEvents = await getAllEventsByChainId(params.chainId);
-    let filteredEvents: typeof allEvents[0][] = [];
+    let filteredEvents: typeof allEvents[0][] = allEvents;
 
     if (query.eventName && _.includes(["mint", "swap", "burn"], query.eventName as string)) {
-      filteredEvents = _.filter(allEvents, ev => ev.eventName.toLowerCase() === (query.eventName as string).toLowerCase());
+      filteredEvents = _.filter(filteredEvents, ev => ev.eventName.toLowerCase() === (query.eventName as string).toLowerCase());
     }
 
     const length = filteredEvents.length;

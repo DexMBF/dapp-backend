@@ -1770,10 +1770,10 @@ vefi-multi-sig@^2.0.0:
   resolved "https://registry.yarnpkg.com/vefi-multi-sig/-/vefi-multi-sig-2.0.0.tgz#775255b76373e021d4f7076fb65eae00bcc7e834"
   integrity sha512-mzLUWpoBlliRjJLygfpkrCv+kCLEw6MmbqJo+R76TnHyKxrFO1EiJQtN/8K0WN7xCxrzhTwb+SfpuTt3w2fzTw==
 
-vefi-token-launchpad-staking@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/vefi-token-launchpad-staking/-/vefi-token-launchpad-staking-2.1.0.tgz#0a1a47a286cd96594b0a2bf0f10e36068ad4ab55"
-  integrity sha512-J3+5Genvtzc57BS2MHuNdxwjKpw8zZfZkmK76NWfif0NDMpWaRB/K9xDbwT2dpT7gfsWYo3rYATBvrASUetSCQ==
+vefi-token-launchpad-staking@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/vefi-token-launchpad-staking/-/vefi-token-launchpad-staking-2.1.2.tgz#796ad1e86ea1de5b3eb6c97a9da668a122195f3e"
+  integrity sha512-UdEO9BIx+QTtIkjWyZ5lmlNRh44qSbinHsW3MPHQUAW0F6CrTx8fkwlcy4u2dQgupr6gMNInocf7WxtwzACASw==
 
 which-boxed-primitive@^1.0.2:
   version "1.0.2"

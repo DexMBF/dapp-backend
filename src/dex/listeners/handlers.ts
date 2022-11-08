@@ -20,15 +20,19 @@ function pushPairToDB(pair: string, token0: string, token1: string, chainId: str
 // Factory event handlers
 export const handlePairCreatedEvent = (url: string, chainId: string) => {
   return async (log: any) => {
-    const { args } = factoryAbiInterface.parseLog(log);
-    const [token0, token1, pair] = args;
+    try {
+      const { args } = factoryAbiInterface.parseLog(log);
+      const [token0, token1, pair] = args;
 
-    logger("----- New pair created %s -----", pair);
+      logger("----- New pair created %s -----", pair);
 
-    await pushPairToDB(pair, token0, token1, chainId);
-    await propagateLastBlockNumberForFactory(log.blockNumber, chainId);
-    await propagateLastBlockNumberForPairs(pair, log.blockNumber, chainId);
-    watchPair(url, pair, chainId);
+      await pushPairToDB(pair, token0, token1, chainId);
+      await propagateLastBlockNumberForFactory(log.blockNumber, chainId);
+      await propagateLastBlockNumberForPairs(pair, log.blockNumber, chainId);
+      watchPair(url, pair, chainId);
+    } catch (error: any) {
+      logger(error.message);
+    }
   };
 };
 

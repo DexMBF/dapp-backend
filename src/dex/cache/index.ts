@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { cacheItem, itemExists, readItem, getAllKeysMatching, hCacheItem, hReadItems } from "../../shared/cache/redis";
+import { cacheItem, itemExists, readItem, hCacheItem, hReadItems } from "../../shared/cache/redis";
 
 const cacheKeyPrefix = "redis::cache::dex";
 

@@ -30,9 +30,13 @@ const fetchAllStakingPools = async (req: express.Request, res: express.Response)
 
 const fetchAllSpecialStakingPools = async (req: express.Request, res: express.Response) => {
   try {
-    const { params } = _.pick(req, ["params"]);
+    const { params, query } = _.pick(req, ["params", "query"]);
     const pools = specialStakingPools[parseInt(params.chainId) as unknown as keyof typeof specialStakingPools];
-    const result = !!pools ? _.map(pools, pool => pool.address) : [];
+    const p = !!pools ? pools : [];
+    const result = {
+      totalItems: p.length,
+      items: p.slice(query.page ? _.subtract(parseInt(query.page as string), 1) * 20 : 0, query.page ? parseInt(query.page as string) * 20 : 20)
+    };
     return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });

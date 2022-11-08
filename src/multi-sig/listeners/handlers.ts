@@ -26,7 +26,7 @@ export const getPastLogsForMultiSigAction = async (action: string, chainId: stri
     logger("----- Retrieving last propagated block for multi-sig actions %s -----", action);
     let lastPropagatedBlockForAction = await getLastBlockNumberForMultiSigAction(chainId);
     const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
-    logger("----- Last propagated block for multi-sig actions %s is %d", action, lastPropagatedBlockForAction);
+    logger("----- Last propagated block for multi-sig actions %s is %d -----", action, lastPropagatedBlockForAction);
 
     if (lastPropagatedBlockForAction === 0) {
       lastPropagatedBlockForAction = parseInt(blockNumber);
