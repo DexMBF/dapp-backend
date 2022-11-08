@@ -26,14 +26,21 @@ function listenForAllSaleCreatorEvents() {
   try {
     _.keys(chains).forEach(key => {
       const provider = buildProvider(chains[key].rpcUrl);
-      const publicSaleCreator = saleCreators[key as keyof typeof saleCreators].publicTokenSaleCreator;
-      const privateSaleCreator = saleCreators[key as keyof typeof saleCreators].privateTokenSaleCreator;
+      const publicSaleCreator = saleCreators[key as keyof typeof saleCreators]?.publicTokenSaleCreator;
+      const privateSaleCreator = saleCreators[key as keyof typeof saleCreators]?.privateTokenSaleCreator;
 
-      logger("----- Initializing watch for %s -----", publicSaleCreator);
-      provider.on({ address: publicSaleCreator, topics: [saleItemCreatedEventId] }, handlePublicTokenSaleItemCreatedEvent(hexValue(parseInt(key))));
+      if (!!publicSaleCreator) {
+        logger("----- Initializing watch for %s -----", publicSaleCreator);
+        provider.on({ address: publicSaleCreator, topics: [saleItemCreatedEventId] }, handlePublicTokenSaleItemCreatedEvent(hexValue(parseInt(key))));
+      }
 
-      logger("----- Initializing watch for %s -----", privateSaleCreator);
-      provider.on({ address: privateSaleCreator, topics: [saleItemCreatedEventId] }, handlePrivateTokenSaleItemCreatedEvent(hexValue(parseInt(key))));
+      if (!!privateSaleCreator) {
+        logger("----- Initializing watch for %s -----", privateSaleCreator);
+        provider.on(
+          { address: privateSaleCreator, topics: [saleItemCreatedEventId] },
+          handlePrivateTokenSaleItemCreatedEvent(hexValue(parseInt(key)))
+        );
+      }
     });
   } catch (error: any) {
     logger(error.message);
@@ -43,8 +50,12 @@ function listenForAllSaleCreatorEvents() {
 function getPastSaleCreatorsEvents() {
   try {
     _.keys(chains).forEach(async key => {
-      await getPastLogsForPublicSaleCreator(saleCreators[key as keyof typeof saleCreators].publicTokenSaleCreator, hexValue(parseInt(key)));
-      await getPastLogsForPrivateSaleCreator(saleCreators[key as keyof typeof saleCreators].privateTokenSaleCreator, hexValue(parseInt(key)));
+      const publicSaleCreator = saleCreators[key as keyof typeof saleCreators]?.publicTokenSaleCreator;
+      const privateSaleCreator = saleCreators[key as keyof typeof saleCreators]?.privateTokenSaleCreator;
+
+      if (!!publicSaleCreator) await getPastLogsForPublicSaleCreator(publicSaleCreator, hexValue(parseInt(key)));
+
+      if (!!privateSaleCreator) await getPastLogsForPrivateSaleCreator(privateSaleCreator, hexValue(parseInt(key)));
     });
   } catch (error: any) {
     logger(error.message);

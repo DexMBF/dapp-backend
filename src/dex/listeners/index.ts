@@ -18,10 +18,12 @@ function listenForAllDEXEvents() {
   try {
     _.keys(chains).forEach(key => {
       const provider = buildProvider(chains[key].rpcUrl);
-      const address = xInfo[key as keyof typeof xInfo].factory;
+      const address = xInfo[key as keyof typeof xInfo]?.factory;
 
-      logger("----- Initializing watch for %s -----", address);
-      provider.on({ address, topics: [pairCreatedEventId] }, handlePairCreatedEvent(chains[key].rpcUrl, hexValue(parseInt(key))));
+      if (!!address) {
+        logger("----- Initializing watch for %s -----", address);
+        provider.on({ address, topics: [pairCreatedEventId] }, handlePairCreatedEvent(chains[key].rpcUrl, hexValue(parseInt(key))));
+      }
     });
   } catch (error: any) {
     logger(error.message);
@@ -31,8 +33,11 @@ function listenForAllDEXEvents() {
 function getPastDEXEvents() {
   try {
     _.keys(chains).forEach(async key => {
-      await getPastLogsForFactory(chains[key].rpcUrl, xInfo[key as keyof typeof xInfo].factory, hexValue(parseInt(key)));
-      await getPastLogsForAllPairs(chains[key].rpcUrl, hexValue(parseInt(key)));
+      const factory = xInfo[key as keyof typeof xInfo]?.factory;
+      if (!!factory) {
+        await getPastLogsForFactory(chains[key].rpcUrl, factory, hexValue(parseInt(key)));
+        await getPastLogsForAllPairs(chains[key].rpcUrl, hexValue(parseInt(key)));
+      }
     });
   } catch (error: any) {
     logger(error.message);

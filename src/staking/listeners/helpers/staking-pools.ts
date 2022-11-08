@@ -77,7 +77,7 @@ export const getPastLogsForAllPools = async (url: string, chainId: string) => {
     const allPools = _.concat(
       await stakingPools.getAllStakingPools({ where: { chainId } }),
       specialStakingPools[parseInt(chainId) as unknown as keyof typeof specialStakingPools]
-        ? _.map(specialStakingPools[parseInt(chainId) as unknown as keyof typeof specialStakingPools], item => ({ id: item.address }))
+        ? _.map(specialStakingPools[parseInt(chainId) as unknown as keyof typeof specialStakingPools], item => ({ id: item }))
         : []
     );
     const blockNumber = await rpcCall(parseInt(chainId), { method: "eth_blockNumber", params: [] });
