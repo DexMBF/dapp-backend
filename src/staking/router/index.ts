@@ -32,7 +32,7 @@ const fetchAllSpecialStakingPools = async (req: express.Request, res: express.Re
   try {
     const { params } = _.pick(req, ["params"]);
     const pools = specialStakingPools[parseInt(params.chainId) as unknown as keyof typeof specialStakingPools];
-    const result = !!pools ? _.map(pools, pool => pool.address) : [];
+    const result = !!pools ? pools : [];
     return res.status(200).json({ result });
   } catch (error: any) {
     return res.status(500).json({ error: error.message });
