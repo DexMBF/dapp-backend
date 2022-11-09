@@ -103,5 +103,19 @@
     "symbol": "MIIDAS",
     "decimals": 6,
     "logoURI": "https://assets.coingecko.com/coins/images/26286/thumb/logo_miidas_round_500.png?1657087214"
+  },
+  {
+    "name": "Binance Coin",
+    "address": "0x611a767AE0b231e82Da8711294A378F5639Af037",
+    "symbol": "BNB",
+    "decimals": 18,
+    "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
+  },
+  {
+    "name": "USDB",
+    "address": "0xc2a9e1dE895a2f8D9F82E67F46ea2cD1BE1f2087",
+    "symbol": "USDB",
+    "decimals": 18,
+    "logoURI": "https://drive.google.com/uc?export=view&id=1RaOE1NXcl7-Zo7UKKOwEV7cTgchXBnmM"
   }
 ]
