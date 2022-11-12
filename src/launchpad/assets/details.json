@@ -7,14 +7,12 @@
         "telegram": "https://google.com",
         "discord": "https://google.com"
       },
-      "tokenomics": [
-        {
-          "presale": 10,
-          "charity": 20,
-          "tax": 40,
-          "team": 30
-        }
-      ]
+      "tokenomics": {
+        "presale": 10,
+        "charity": 20,
+        "tax": 40,
+        "team": 30
+      }
     }
   }
 }
