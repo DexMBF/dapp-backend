@@ -1,12 +1,20 @@
 {
   "32520": {
     "0x16e0eb144a146521c5be1fbc34c6d511c64dacbf26ee70ae0c0167ba5e6cef91": {
-      "description": "This is just a test presale. Do not buy",
+      "description": "This is just a test presale. Do not buy!! You buy at your own risk.",
       "urls": {
         "website": "https://google.com",
         "telegram": "https://google.com",
         "discord": "https://google.com"
-      }
+      },
+      "tokenomics": [
+        {
+          "presale": 10,
+          "charity": 20,
+          "tax": 40,
+          "team": 30
+        }
+      ]
     }
   }
 }
